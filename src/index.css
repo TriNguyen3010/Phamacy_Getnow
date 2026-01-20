@@ -62,3 +62,34 @@ body {
   color: var(--accent-red);
   border: 1px solid #FEE2E2;
 }
+
+@keyframes highlight-pulse-3 {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  25% {
+    box-shadow: 0 0 0 4px rgba(var(--highlight-rgb), 0.5);
+    background-color: rgba(var(--highlight-rgb), 0.05);
+  }
+
+  50% {
+    box-shadow: 0 0 0 2px rgba(var(--highlight-rgb), 0.3);
+    background-color: rgba(var(--highlight-rgb), 0.1);
+  }
+
+  75% {
+    box-shadow: 0 0 0 4px rgba(var(--highlight-rgb), 0.5);
+    background-color: rgba(var(--highlight-rgb), 0.05);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    background-color: white;
+  }
+}
+
+.animate-highlight-3 {
+  animation: highlight-pulse-3 1s ease-in-out 1 forwards;
+  /* 1 time, then stop at 100% keyframe */
+}

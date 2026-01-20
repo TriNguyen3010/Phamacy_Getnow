@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ArrowLeftOutlined,
     PrinterOutlined,
@@ -17,7 +17,18 @@ import {
     DownOutlined,
     UpOutlined,
     CarOutlined,
-    CalendarOutlined
+    CalendarOutlined,
+    EyeOutlined,
+    DropboxOutlined,
+    CheckCircleOutlined,
+    FileTextOutlined,
+    UserOutlined,
+    ExportOutlined,
+    StarOutlined,
+    StarFilled,
+    EnvironmentOutlined, // Driver Picking Up
+    WarningOutlined,
+    BulbOutlined
 } from '@ant-design/icons';
 import {
     Layout,
@@ -32,7 +43,8 @@ import {
     Divider,
     Checkbox,
     Input,
-    Collapse
+    Collapse,
+    Select
 } from 'antd';
 import { ChevronRight } from 'lucide-react';
 
@@ -40,6 +52,7 @@ const { Header, Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Panel } = Collapse;
 
+import lisinoprilImg from '../assets/products/lisinopril.png';
 import omeprazoleImg from '../assets/products/omeprazole.png';
 import sucralfateImg from '../assets/products/sucralfate.png';
 import gastropulgiteImg from '../assets/products/gastropulgite.png';
@@ -56,10 +69,10 @@ const defaultOrderData = {
         address: "54 Đường B4, An Lợi Đông, Thủ Đức, Thành phố Hồ Chí Minh 700000"
     },
     items: [
-        { id: 1, name: "Omeprazole 20mg", price: 128000, qty: "1 box", image: omeprazoleImg },
-        { id: 2, name: "Sucralfate 1g", price: 150000, qty: "1 box", image: sucralfateImg },
-        { id: 3, name: "Gastropulgite", price: 124800, qty: "1 box", image: gastropulgiteImg },
-        { id: 4, name: "Probiotics", price: 381000, qty: "1 box", warning: "Insufficient stock", image: probioticsImg }
+        { id: 1, name: "Omeprazole 20mg", price: 128000, qty: "1", unit: "Box", image: omeprazoleImg },
+        { id: 2, name: "Sucralfate 1g", price: 150000, qty: "1", unit: "Box", image: sucralfateImg },
+        { id: 3, name: "Gastropulgite", price: 124800, qty: "1", unit: "Box", image: gastropulgiteImg },
+        { id: 4, name: "Lisinopril 10mg", price: 128000, qty: "1", unit: "Strip", warning: "Out of stock", image: lisinoprilImg }
     ]
 };
 
@@ -130,8 +143,799 @@ const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) 
     );
 };
 
+// --- Ready To Pack Layout ---
+// --- Ready To Pack Layout ---
+const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false }) => {
+    const defaultActiveKey = ['2']; // Prescription open by default
+    const [checkedItems, setCheckedItems] = useState({});
+    const [isPacked, setIsPacked] = useState(initialIsPacked);
+
+    useEffect(() => {
+        // Only auto-advance if we are already in "Ready to Ship" mode (initialIsPacked=true)
+        // OR if the user just clicked confirm (isPacked became true from false)
+        // AND if onNext is provided.
+        if (isPacked && onNext) {
+            // If manual packing (initialIsPacked=false), we want to just set isPacked=true visually, 
+            // then maybe wait?
+            // Actually, if we are in 'Packing' status, onNext is 'Ready to Ship'.
+            // We should call onNext immediately when user clicks button? 
+            // No, user wants "Looking for Driver" visual state.
+
+            // If we are 'Packing': User clicks -> setIsPacked(true) -> "Looking for Driver".
+            // We delay calling onNext ('Ready to Ship')?
+            // Or we call onNext immediately, and 'Ready to Ship' status renders this same component with initialIsPacked=true? -> Yes.
+
+            // But if we call onNext immediately, the parent re-renders 'Ready to Ship' layout.
+            // 'Ready to Ship' layout IS THIS component with initialIsPacked=true.
+            // So visually it works.
+            // BUT, 'Ready to Ship' -> 'Driver Picking Up' needs delay.
+
+            // So:
+            // 1. If initialIsPacked=false (Packing status):
+            //    User clicks button -> setIsPacked(true).
+            //    We DO NOT auto-call onNext via timer? 
+            //    Or we do? If we do, we go to 'Ready to Ship'.
+            //    If we go to 'Ready to Ship', we render with initialIsPacked=true.
+            //    Then that runs timer -> 'Driver Picking Up'.
+
+            // So flow: Packing -> (User click) -> Ready to Ship -> (Timer) -> Driver Picking Up.
+            // That seems right.
+
+            const timer = setTimeout(() => {
+                onNext();
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isPacked, onNext]);
+
+    // Toggle item check
+    const handleItemCheck = (idx) => {
+        setCheckedItems(prev => ({
+            ...prev,
+            [idx]: !prev[idx]
+        }));
+    };
+
+    // Check if all items are checked
+    const allChecked = orderData.items.every((_, i) => checkedItems[i]);
+
+    // Helper to render collapsible header
+    const renderHeader = (title, extra) => (
+        <div className="flex justify-between items-center w-full">
+            <Text strong style={{ fontSize: '14px' }}>{title}</Text>
+            {extra}
+        </div>
+    );
+
+    return (
+        <div className="flex flex-col h-screen bg-white">
+            <GlobalHeader />
+            <OrderHeader
+                onBack={onBack}
+                currentStep={3} // Packing Step Active (0-index base? 
+                // New=0, Review=1, Payment=2, Packing=3. Yes.)
+                orderId={orderData.id}
+                createdDate={orderData.created}
+            />
+
+            <div className="flex-1 overflow-y-auto bg-white p-8">
+                <div className="max-w-4xl mx-auto space-y-6">
+
+                    {/* Ready to Pack Banner */}
+                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                            {isPacked ? <CarOutlined /> : <DropboxOutlined />}
+                            <span className="font-medium">{isPacked ? "Ready to ship out" : "Ready to pack"}</span>
+                        </div>
+                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircleOutlined className="text-2xl text-[#13854e]" />
+                                    <div>
+                                        <Title level={4} style={{ margin: 0 }}>
+                                            {isPacked ? "We’ll assign a driver to pick up your order..." : "Payment confirmed. Safe to dispense."}
+                                        </Title>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2 items-end">
+                                    <Button icon={<PrinterOutlined />}>Print Shipping Label</Button>
+                                    <Button>Preview Shipping Label</Button>
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-4">
+                                <div>
+                                    <span className="text-gray-500 text-xs block">Shipping method</span>
+                                    <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <TruckIconSmall />
+                                        Standard - Receive within 24hrs
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-gray-500 text-xs block">Delivery deadline</span>
+                                    <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Collapsible Sections */}
+                    <Collapse
+                        defaultActiveKey={defaultActiveKey}
+                        expandIconPosition="end"
+                        ghost
+                        className="site-collapse-custom-collapse"
+                    >
+                        {/* Customer Details */}
+                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <div className="pl-0 pb-2">
+                                <CustomerInfoSimple customer={orderData.customer} />
+                            </div>
+                        </Panel>
+
+                        {/* Prescription (Packing Checklist) */}
+                        <Panel
+                            header={
+                                <div className="flex justify-between items-center w-full pr-4">
+                                    <Text strong className="text-sm">Prescription</Text>
+                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                </div>
+                            }
+                            key="2"
+                            className="border-b border-gray-100 py-2"
+                        >
+                            <div className="pl-0">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                        <span className="text-sm font-medium">Stomachache</span>
+                                    </div>
+                                    <Button size="small">View uploaded prescription</Button>
+                                </div>
+                                <div className="mb-2">
+                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                    <div className="space-y-3">
+                                        {orderData.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                    </div>
+                                                    <div>
+                                                        <Text strong className="block text-sm">{item.name}</Text>
+                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-8">
+                                                    <div className="text-right">
+                                                        <Text type="secondary" className="text-xs block">Price</Text>
+                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                    </div>
+                                                    <Checkbox
+                                                        checked={!!checkedItems[idx]}
+                                                        onChange={() => handleItemCheck(idx)}
+                                                        className="scale-125"
+                                                        disabled={isPacked}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </Panel>
+
+                        {/* Payment Details */}
+                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <div className="space-y-2 pl-0">
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Total order</Text>
+                                    <Text strong>791,800₫</Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Shipping fee</Text>
+                                    <Text strong>0₫</Text>
+                                </div>
+                                <div className="flex justify-between items-end pt-2">
+                                    <Text strong>Total payment</Text>
+                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                </div>
+                            </div>
+                        </Panel>
+                    </Collapse>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                    <Button
+                        type="primary"
+                        size="large"
+                        disabled={!allChecked || isPacked}
+                        onClick={isPacked ? null : () => setIsPacked(true)}
+                        className={allChecked && !isPacked ? "bg-blue-600" : (isPacked ? "bg-gray-400 border-gray-400" : "")}
+                    >
+                        {isPacked ? "Looking for Driver" : "Confirm Packed & Ready to Ship"}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Helper for Truck Icon
+const TruckIconSmall = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+)
+
+// Helper Component for shared customer info used in collapse
+const CustomerInfoSimple = ({ customer }) => (
+    <div className="grid grid-cols-2 gap-4">
+        <div>
+            <Text type="secondary" className="block text-xs">Name</Text>
+            <Text strong>{customer.name}</Text>
+        </div>
+        <div>
+            <Text type="secondary" className="block text-xs">Phone</Text>
+            <Text strong>{customer.phone}</Text>
+        </div>
+        <div className="col-span-2">
+            <Text type="secondary" className="block text-xs">Address</Text>
+            <Text strong>{customer.address}</Text>
+        </div>
+    </div>
+)
+
+// --- Driver Assigned Layout (Ready to Ship) ---
+const DriverAssignedLayout = ({ orderData, onBack }) => {
+    const defaultActiveKey = ['2'];
+
+    // Helper to render collapsible header
+    const renderHeader = (title, extra) => (
+        <div className="flex justify-between items-center w-full">
+            <Text strong style={{ fontSize: '14px' }}>{title}</Text>
+            {extra}
+        </div>
+    );
+
+    return (
+        <div className="flex flex-col h-screen bg-white">
+            <GlobalHeader />
+            <OrderHeader
+                onBack={onBack}
+                currentStep={4} // Delivering Step Active
+                orderId={orderData.id}
+                createdDate={orderData.created}
+            />
+
+            <div className="flex-1 overflow-y-auto bg-white p-8">
+                <div className="max-w-4xl mx-auto space-y-6">
+
+                    {/* Driver Assigned Banner */}
+                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                            <CarOutlined />
+                            <span className="font-medium">Ready to ship out</span>
+                        </div>
+                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
+                            {/* Headline & Reprint */}
+                            <div className="flex justify-between items-start mb-6">
+                                <Title level={4} style={{ margin: 0 }}>Driver Assigned: Tai Pham is arriving.</Title>
+                                <Button icon={<PrinterOutlined />}>Reprint Shipping Label</Button>
+                            </div>
+
+                            {/* Driver Info Grid */}
+                            <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
+                                {/* Avatar */}
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                    {/* Mock Avatar */}
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                </div>
+                                {/* Name */}
+                                <div>
+                                    <Text type="secondary" className="block text-xs">Driver's name</Text>
+                                    <Text strong>Tai Pham</Text>
+                                </div>
+                                {/* Phone */}
+                                <div>
+                                    <Text type="secondary" className="block text-xs">Phone number</Text>
+                                    <Text strong>078 389 270</Text>
+                                </div>
+                                {/* License */}
+                                <div>
+                                    <Text type="secondary" className="block text-xs">License plate</Text>
+                                    <Text strong>59-X1 123.45</Text>
+                                </div>
+                                {/* Location Button */}
+                                <div>
+                                    <Button icon={<ExportOutlined />}>View location</Button>
+                                </div>
+                            </div>
+
+                            {/* Shipping Details */}
+                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <div>
+                                    <span className="text-gray-500 text-xs block">Shipping method</span>
+                                    <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <TruckIconSmall />
+                                        Standard - Receive within 24hrs
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-gray-500 text-xs block">Delivery deadline</span>
+                                    <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Collapsible Sections */}
+                    <Collapse
+                        defaultActiveKey={defaultActiveKey}
+                        expandIconPosition="end"
+                        ghost
+                        className="site-collapse-custom-collapse"
+                    >
+                        {/* Customer Details */}
+                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <div className="pl-0 pb-2">
+                                <CustomerInfoSimple customer={orderData.customer} />
+                            </div>
+                        </Panel>
+
+                        {/* Prescription (Read Only) */}
+                        <Panel
+                            header={
+                                <div className="flex justify-between items-center w-full pr-4">
+                                    <Text strong className="text-sm">Prescription</Text>
+                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                </div>
+                            }
+                            key="2"
+                            className="border-b border-gray-100 py-2"
+                        >
+                            <div className="pl-0">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                        <span className="text-sm font-medium">Stomachache</span>
+                                    </div>
+                                    <Button size="small">View uploaded prescription</Button>
+                                </div>
+                                <div className="mb-2">
+                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                    <div className="space-y-3">
+                                        {orderData.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                    </div>
+                                                    <div>
+                                                        <Text strong className="block text-sm">{item.name}</Text>
+                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <Text type="secondary" className="text-xs block">Price</Text>
+                                                    <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </Panel>
+
+                        {/* Payment Details */}
+                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <div className="space-y-2 pl-0">
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Total order</Text>
+                                    <Text strong>791,800₫</Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Shipping fee</Text>
+                                    <Text strong>0₫</Text>
+                                </div>
+                                <div className="flex justify-between items-end pt-2">
+                                    <Text strong>Total payment</Text>
+                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                </div>
+                            </div>
+                        </Panel>
+                    </Collapse>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                <div className="max-w-4xl mx-auto flex flex-col items-end gap-2">
+                    <Text type="secondary" style={{ fontSize: '12px' }}>Drivers usually scan, use this only if scanning fails</Text>
+                    <Button size="large">
+                        Contact Support
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Out For Delivery Layout ---
+const OutForDeliveryLayout = ({ orderData, onBack }) => {
+    const defaultActiveKey = ['2'];
+
+    // Helper to render collapsible header
+    const renderHeader = (title, extra) => (
+        <div className="flex justify-between items-center w-full">
+            <Text strong style={{ fontSize: '14px' }}>{title}</Text>
+            {extra}
+        </div>
+    );
+
+    return (
+        <div className="flex flex-col h-screen bg-white">
+            <GlobalHeader />
+            <OrderHeader
+                onBack={onBack}
+                currentStep={4} // Delivering is Step 4 (or 5? Stepper: New, Review, Payment, Packing, Delivering, Complete. 0,1,2,3,4,5. So 4 is correct.)
+                orderId={orderData.id}
+                createdDate={orderData.created}
+            />
+
+            <div className="flex-1 overflow-y-auto bg-white p-8">
+                <div className="max-w-4xl mx-auto space-y-6">
+
+                    {/* Out for Delivery Banner */}
+                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                            <TruckIconSmall />
+                            <span className="font-medium">Out for delivery</span>
+                        </div>
+                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
+                            {/* Headline & Report */}
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <Title level={4} style={{ margin: 0 }}>Your order is on the way to deliver.</Title>
+                                    <Text type="secondary" className="text-xs">Estimated arrival time: Today, before 7:00 PM</Text>
+                                </div>
+                                <Button>Report delivery issue</Button>
+                            </div>
+
+                            <Divider dashed style={{ margin: '16px 0' }} />
+
+                            {/* Driver Info Grid */}
+                            <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
+                                {/* Avatar */}
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                </div>
+                                {/* Name */}
+                                <div>
+                                    <Text type="secondary" className="block text-xs">Driver's name</Text>
+                                    <Text strong>Tai Pham</Text>
+                                </div>
+                                {/* Phone */}
+                                <div>
+                                    <Text type="secondary" className="block text-xs">Phone number</Text>
+                                    <Text strong>078 389 270</Text>
+                                </div>
+                                {/* License */}
+                                <div>
+                                    <Text type="secondary" className="block text-xs">License plate</Text>
+                                    <Text strong>59-X1 123.45</Text>
+                                </div>
+                                {/* Track Button */}
+                                <div>
+                                    <Button icon={<ExportOutlined />}>Track shipment</Button>
+                                </div>
+                            </div>
+
+                            {/* Shipping Details */}
+                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <div>
+                                    <span className="text-gray-500 text-xs block">Shipping method</span>
+                                    <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <TruckIconSmall />
+                                        Standard - Receive within 24hrs
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-gray-500 text-xs block">Delivery deadline</span>
+                                    <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Collapsible Sections */}
+                    <Collapse
+                        defaultActiveKey={defaultActiveKey}
+                        expandIconPosition="end"
+                        ghost
+                        className="site-collapse-custom-collapse"
+                    >
+                        {/* Customer Details */}
+                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <div className="pl-0 pb-2">
+                                <CustomerInfoSimple customer={orderData.customer} />
+                            </div>
+                        </Panel>
+
+                        {/* Prescription (Read Only) */}
+                        <Panel
+                            header={
+                                <div className="flex justify-between items-center w-full pr-4">
+                                    <Text strong className="text-sm">Prescription</Text>
+                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                </div>
+                            }
+                            key="2"
+                            className="border-b border-gray-100 py-2"
+                        >
+                            <div className="pl-0">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                        <span className="text-sm font-medium">Stomachache</span>
+                                    </div>
+                                    <Button size="small">View uploaded prescription</Button>
+                                </div>
+                                <div className="mb-2">
+                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                    <div className="space-y-3">
+                                        {orderData.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                    </div>
+                                                    <div>
+                                                        <Text strong className="block text-sm">{item.name}</Text>
+                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <Text type="secondary" className="text-xs block">Price</Text>
+                                                    <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </Panel>
+
+                        {/* Payment Details */}
+                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <div className="space-y-2 pl-0">
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Total order</Text>
+                                    <Text strong>791,800₫</Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Shipping fee</Text>
+                                    <Text strong>0₫</Text>
+                                </div>
+                                <div className="flex justify-between items-end pt-2">
+                                    <Text strong>Total payment</Text>
+                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                </div>
+                            </div>
+                        </Panel>
+                    </Collapse>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                    <Button size="large">
+                        Contact Support
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Completed Layout ---
+const CompletedLayout = ({ orderData, onBack }) => {
+    const defaultActiveKey = ['2'];
+    const [rating, setRating] = useState(5);
+
+    // Helper to render collapsible header
+    const renderHeader = (title, extra) => (
+        <div className="flex justify-between items-center w-full">
+            <Text strong style={{ fontSize: '14px' }}>{title}</Text>
+            {extra}
+        </div>
+    );
+
+    return (
+        <div className="flex flex-col h-screen bg-white">
+            <GlobalHeader />
+            <OrderHeader
+                onBack={onBack}
+                currentStep={5} // Complete Step Active
+                orderId={orderData.id}
+                createdDate={orderData.created}
+            />
+
+            <div className="flex-1 overflow-y-auto bg-white p-8">
+                <div className="max-w-4xl mx-auto space-y-6">
+
+                    {/* Order Complete Banner */}
+                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                            <CheckCircleOutlined />
+                            <span className="font-medium">Order complete</span>
+                        </div>
+                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
+                            {/* Headline & Print */}
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <Title level={4} style={{ margin: 0 }}>Order was successfully delivered.</Title>
+                                    <Text type="secondary" className="text-xs">Delivered on: 2026-01-15, 17:18:15 PM</Text>
+                                </div>
+                                <Button icon={<PrinterOutlined />}>Print invoice</Button>
+                            </div>
+
+                            <Divider dashed style={{ margin: '16px 0' }} />
+
+                            {/* Driver Info Row */}
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-6">
+                                    {/* Avatar */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" className="block text-xs">Driver's name</Text>
+                                            <Text strong>Tai Pham</Text>
+                                        </div>
+                                    </div>
+                                    {/* Phone */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">Phone number</Text>
+                                        <Text strong>078 389 270</Text>
+                                    </div>
+                                    {/* License */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">License plate</Text>
+                                        <Text strong>59-X1 123.45</Text>
+                                    </div>
+                                </div>
+                                {/* Track Button */}
+                                <Button icon={<ExportOutlined />}>Track shipment</Button>
+                            </div>
+
+                            {/* Rating Section */}
+                            <div className="mb-6">
+                                <Text type="secondary" className="block text-xs mb-1">Rating the pickup speed/attitude</Text>
+                                <div className="flex gap-1 text-2xl cursor-pointer">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <span key={star} onClick={() => setRating(star)} className="text-[#4F46E5] hover:scale-110 transition-transform">
+                                            {star <= rating ? <StarFilled /> : <StarOutlined />}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Shipping Details */}
+                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <div>
+                                    <span className="text-gray-500 text-xs block">Shipping method</span>
+                                    <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <TruckIconSmall />
+                                        Standard - Receive within 24hrs
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-gray-500 text-xs block">Delivered on</span>
+                                    <span className="font-bold text-gray-900">2026-01-15, 17:18:15 PM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Collapsible Sections */}
+                    <Collapse
+                        defaultActiveKey={defaultActiveKey}
+                        expandIconPosition="end"
+                        ghost
+                        className="site-collapse-custom-collapse"
+                    >
+                        {/* Customer Details */}
+                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <div className="pl-0 pb-2">
+                                <CustomerInfoSimple customer={orderData.customer} />
+                            </div>
+                        </Panel>
+
+                        {/* Prescription (Read Only with Checks) */}
+                        <Panel
+                            header={
+                                <div className="flex justify-between items-center w-full pr-4">
+                                    <Text strong className="text-sm">Prescription</Text>
+                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                </div>
+                            }
+                            key="2"
+                            className="border-b border-gray-100 py-2"
+                        >
+                            <div className="pl-0">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                        <span className="text-sm font-medium">Stomachache</span>
+                                    </div>
+                                    <Button size="small">View uploaded prescription</Button>
+                                </div>
+                                <div className="mb-2">
+                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                    <div className="space-y-3">
+                                        {orderData.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                    </div>
+                                                    <div>
+                                                        <Text strong className="block text-sm">{item.name}</Text>
+                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-8">
+                                                    <div className="text-right">
+                                                        <Text type="secondary" className="text-xs block">Price</Text>
+                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                    </div>
+                                                    <Checkbox checked disabled className="scale-110" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </Panel>
+
+                        {/* Payment Details */}
+                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <div className="space-y-2 pl-0">
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Total order</Text>
+                                    <Text strong>791,800₫</Text>
+                                </div>
+                                <div className="flex justify-between">
+                                    <Text className="text-gray-600">Shipping fee</Text>
+                                    <Text strong>0₫</Text>
+                                </div>
+                                <div className="flex justify-between items-end pt-2">
+                                    <Text strong>Total payment</Text>
+                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                </div>
+                            </div>
+                        </Panel>
+                    </Collapse>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                    <Button size="large">
+                        Contact Support
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Waiting Payment Components ---
-const WaitingPaymentLayout = ({ orderData, onBack }) => {
+const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
     const defaultActiveKey = ['2', '3']; // Expands Prescription and Payment details by default
 
     // Helper to render collapsible header
@@ -292,7 +1096,7 @@ const WaitingPaymentLayout = ({ orderData, onBack }) => {
             <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
                 <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
                     <Button type="text" danger>Cancel order</Button>
-                    <Button type="primary" size="large" className="bg-blue-600">Confirm payment manually</Button>
+                    <Button type="primary" size="large" className="bg-blue-600" onClick={onConfirmPayment}>Confirm payment manually</Button>
                 </div>
             </div>
         </div>
@@ -303,131 +1107,189 @@ const WaitingPaymentLayout = ({ orderData, onBack }) => {
 
 const CustomerInfo = ({ customer }) => {
     return (
-        <Card bordered={false} className="shadow-[0_1px_2px_rgba(0,0,0,0.03)] mb-4">
-            <div className="flex justify-between items-center mb-4">
+        <Card bordered={false} className="shadow-sm mb-6" bodyStyle={{ padding: '0' }}>
+            <div className="border-b border-gray-100 px-5 py-3">
                 <Title level={5} style={{ margin: 0 }}>Customer details</Title>
             </div>
-            <Row gutter={[24, 16]}>
-                <Col span={12}>
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>Name</Text>
-                    <Text strong>{customer.name}</Text>
-                </Col>
-                <Col span={12}>
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>Phone number</Text>
-                    <Space>
-                        <Text strong>{customer.phone}</Text>
-                        <MessageOutlined style={{ color: '#1890FF' }} />
-                    </Space>
-                </Col>
-                <Col span={24}>
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>Ship to</Text>
-                    <Text strong>{customer.address}</Text>
-                </Col>
-            </Row>
+            <div className="p-5">
+                <div className="grid grid-cols-[1.5fr_1fr] gap-x-8 gap-y-6">
+                    <div>
+                        <Text className="text-gray-500 text-xs block mb-1">Customer name</Text>
+                        <Text strong className="text-base">{customer.name}</Text>
+                    </div>
+                    <div>
+                        <Text className="text-gray-500 text-xs block mb-1">Phone number</Text>
+                        <div className="flex items-center gap-2">
+                            <Text strong className="text-base">{customer.phone}</Text>
+                            <Button size="small" icon={<MessageOutlined />} className="text-gray-400 border-gray-200" />
+                        </div>
+                    </div>
+                    <div className="col-span-2">
+                        <Text className="text-gray-500 text-xs block mb-1">Ship to</Text>
+                        <Text strong className="block text-sm">{customer.address}</Text>
+                    </div>
+                </div>
+            </div>
         </Card>
     );
 };
 
 const ProductList = ({ items }) => {
     return (
-        <Card bordered={false} className="shadow-[0_1px_2px_rgba(0,0,0,0.03)] mb-4" bodyStyle={{ padding: 0 }}>
-            {/* Card Header area (custom) */}
-            <div className="px-6 py-4 border-b border-[#F0F0F0] flex justify-between items-center">
-                <Space>
-                    <Title level={5} style={{ margin: 0 }}>Prescription</Title>
-                </Space>
-                <Space>
-                    <Text type="secondary" style={{ fontSize: '12px' }}>No. <Text strong>BN000000002</Text></Text>
-                    <MessageOutlined style={{ color: '#BFBFBF' }} />
-                </Space>
+        <div className="mb-6">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
+                <Title level={5} style={{ margin: 0 }}>Prescription</Title>
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1">
+                    <span className="text-gray-500 text-xs">No.</span>
+                    <span className="font-bold text-xs text-gray-900">BN000000002</span>
+                    <ExportOutlined className="text-gray-400 text-xs cursor-pointer" />
+                </div>
             </div>
 
-            <div className="p-6">
-                <div className="mb-4">
-                    <Text type="secondary" style={{ fontSize: '12px', marginRight: 8 }}>Diagnosis</Text>
-                    <Tag style={{ background: '#FFF7E6', color: '#D46B08', border: '1px solid #FFD591' }}>Stomachache</Tag>
+            {/* Diagnosis */}
+            <div className="mb-6 bg-white border border-gray-200 rounded p-0 grid grid-cols-[100px_1fr] items-center">
+                <div className="px-3 py-2 text-gray-500 text-sm border-r border-gray-200 bg-gray-50">Diagnosis</div>
+                <div className="px-3 py-2 font-medium text-gray-900">Stomachache</div>
+            </div>
+
+            {/* Items Header */}
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-3">
+                    <span className="text-gray-500 text-sm">Items: <strong className="text-gray-900">{items.length}</strong></span>
+                    <span className="bg-[#FEF3C7] text-[#92400E] text-xs font-medium px-2 py-0.5 rounded border border-[#FDE68A]">
+                        Drafted by AI. Verify carefully.
+                    </span>
                 </div>
+                <Button type="link" icon={<PlusOutlined />} className="text-blue-600 font-medium px-0">Add item</Button>
+            </div>
 
-                <div className="flex justify-between items-center mb-4">
-                    <Space>
-                        <Text strong>Items: {items.length}</Text>
-                        <Tag color="gold" style={{ border: 'none', background: '#FFFBE6' }}>Drafted by AI. Verify carefully.</Tag>
-                    </Space>
-                    <Button type="link" icon={<PlusOutlined />} style={{ padding: 0, fontWeight: 500 }}>Add item</Button>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                    {items.map((item) => (
-                        <div key={item.id}>
-                            <div className={`flex gap-4 p-3 rounded-lg border ${item.warning ? 'bg-[#FFF1F0] border-[#FFCCC7]' : 'bg-white border-transparent hover:border-[#1890FF]'}`}>
-                                {/* Thumbnail */}
-                                <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-[#F0F0F0] overflow-hidden p-1">
-                                    {item.image && item.image !== 'img' ? (
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                                    ) : (
-                                        <div className="w-10 h-10 bg-[#F5F5F5] rounded"></div>
-                                    )}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <Text strong style={{ fontSize: '14px', display: 'block' }}>{item.name}</Text>
-                                            <Text type="secondary" style={{ fontSize: '12px' }}>Qty: {item.qty}</Text>
-                                        </div>
-                                        <div className="text-right">
-                                            <Text type="secondary" style={{ fontSize: '10px', display: 'block' }}>Price</Text>
-                                            <Text strong className={item.warning ? "line-through text-gray-400" : ""}>{item.price.toLocaleString()}đ</Text>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex flex-col justify-center gap-2 pl-2 border-l border-[#F0F0F0] ml-2">
-                                    <Button type="text" size="small" icon={<EditOutlined className="text-gray-400" />} />
-                                    <Button type="text" size="small" icon={<DeleteOutlined className="text-gray-400" />} />
-                                </div>
-                            </div>
-
-                            {/* Special Warning Box Logic */}
-                            {item.warning && (
-                                <div className="mt-2 bg-[#F9FAFB] border border-[#F0F0F0] rounded-lg p-3 ml-0">
-                                    <Space align="start">
-                                        <InfoCircleOutlined className="text-red-500 mt-1" />
-                                        <div>
-                                            <Text strong style={{ fontSize: '12px', display: 'block' }}>This item cannot be fulfilled due to insufficient stock.</Text>
-                                            <div className="mt-1 text-xs">
-                                                Change to: <Text strong>Blackmores {item.name}?</Text>
-                                            </div>
-                                            <div className="mt-1 text-xs text-gray-500">
-                                                Price gap: <Text strong>+8,000</Text>
-                                            </div>
-                                        </div>
-                                    </Space>
-                                    <div className="flex justify-end gap-2 mt-2">
-                                        <Button size="small" danger icon={<DislikeOutlined />}>Disagree</Button>
-                                        <Button size="small" type="default" className="text-green-600 border-green-200 hover:text-green-700 hover:border-green-300 bg-white" icon={<LikeOutlined />}>Agree</Button>
-                                    </div>
-                                </div>
+            {/* Items List */}
+            <div className="flex flex-col gap-4">
+                {items.map((item) => (
+                    <div key={item.id} className="flex gap-4 p-4 bg-white border border-gray-200 rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                        {/* Thumbnail */}
+                        <div className="w-16 h-16 bg-white rounded border border-gray-200 flex items-center justify-center flex-shrink-0 p-1">
+                            {item.image ? (
+                                <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                            ) : (
+                                <FileTextOutlined className="text-2xl text-gray-300" />
                             )}
                         </div>
-                    ))}
-                </div>
+
+                        {/* Form Area */}
+                        <div className="flex-1 space-y-3">
+                            {/* Warning Banner inside item */}
+                            {item.warning ? (
+                                <div>
+                                    {/* Name Row */}
+                                    <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white mb-2 relative hover:border-blue-300 transition-colors">
+                                        <span className="text-gray-400 text-xs mr-2">Name</span>
+                                        <span className="text-gray-900 font-bold flex-1">{item.name}</span>
+                                        <DownOutlined className="text-gray-900 text-xs" />
+                                    </div>
+
+                                    {/* Warning Row */}
+                                    <div className="text-[#DAA507] text-xs font-medium flex items-center gap-1.5 mb-2 pl-1">
+                                        <WarningOutlined /> Out of stock
+                                    </div>
+
+                                    {/* Qty/Unit Row */}
+                                    <div className="grid grid-cols-2 gap-3 mb-2">
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 hover:border-blue-300 transition-colors">
+                                            <span className="text-gray-400 text-xs mr-2">Qty</span>
+                                            <span className="text-gray-900 font-medium flex-1">{item.qty}</span>
+                                            <DownOutlined className="text-gray-400 text-xs" />
+                                        </div>
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 hover:border-blue-300 transition-colors">
+                                            <span className="text-gray-400 text-xs mr-2">Unit</span>
+                                            <span className="text-gray-900 font-medium flex-1">{item.unit}</span>
+                                            <DownOutlined className="text-gray-400 text-xs" />
+                                        </div>
+                                    </div>
+
+                                    {/* Price Row */}
+                                    <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 mb-4 opacity-75">
+                                        <span className="text-gray-400 text-xs mr-2">Price</span>
+                                        <span className="text-gray-600 font-medium">{item.price.toLocaleString()}</span>
+                                    </div>
+
+                                    {/* Suggestion Box */}
+                                    <div className="bg-[#eff6ff] rounded-lg p-4 relative">
+                                        <div className="flex gap-3">
+                                            <BulbOutlined className="text-gray-900 mt-1 text-lg" />
+                                            <div className="flex-1">
+                                                <div className="text-sm text-gray-900 mb-2">
+                                                    Change to: <span className="font-bold">Blackmores Probiotics?</span>
+                                                </div>
+                                                <div className="text-sm text-gray-900 mb-2 font-bold">
+                                                    Price gap: +8,000
+                                                </div>
+                                                <div className="text-xs text-slate-500 italic mb-4">
+                                                    Tips: Always consult with customer.
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <Button size="middle" danger className="bg-white flex items-center gap-2">
+                                                        <DislikeOutlined /> Keep original
+                                                    </Button>
+                                                    <Button size="middle" className="bg-white text-green-700 border-green-200 hover:text-green-800 hover:border-green-400 flex items-center gap-2">
+                                                        <LikeOutlined /> Apply switch
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Row 1: Name */}
+                                    <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors w-full relative">
+                                        <span className="text-gray-400 text-xs mr-2">Name</span>
+                                        <span className="text-gray-900 font-medium flex-1">{item.name}</span>
+                                        <DownOutlined className="text-gray-400 text-xs" />
+                                    </div>
+
+                                    {/* Row 2: Qt / Unit / Price */}
+                                    <div className="grid grid-cols-[1fr_1fr_1.5fr] gap-3">
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+                                            <span className="text-gray-400 text-xs mr-2">Qty</span>
+                                            <input
+                                                type="number"
+                                                defaultValue={item.qty}
+                                                className="flex-1 w-full min-w-0 outline-none text-gray-900 font-medium bg-transparent p-0 m-0"
+                                            />
+                                        </div>
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
+                                            <span className="text-gray-400 text-xs mr-2">Unit</span>
+                                            <span className="text-gray-900 font-medium flex-1">{item.unit}</span>
+                                        </div>
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
+                                            <span className="text-gray-400 text-xs mr-2">Price</span>
+                                            <span className="text-gray-900 font-medium flex-1">{item.price.toLocaleString()}đ</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                ))}
             </div>
-        </Card>
+        </div>
     );
 };
 
 const DocumentViewer = () => {
     return (
         <div className="h-full bg-[#1F1F1F] flex flex-col relative border-r border-[#303030]">
-            <div className="absolute top-4 right-4 z-10 flex gap-2">
-                <Button icon={<PrinterOutlined />} ghost className="text-white bg-black/50 border-none" />
-                <Button icon={<DownloadOutlined />} ghost className="text-white bg-black/50 border-none" />
+            <div className="h-10 bg-black flex items-center justify-between px-4">
+                <Text className="text-gray-400 text-xs">Prescription - Uploaded by John Smith</Text>
+                <div className="flex gap-2">
+                    <Button type="text" icon={<PrinterOutlined className="text-gray-400" />} size="small" />
+                    <Button type="text" icon={<DownloadOutlined className="text-gray-400" />} size="small" />
+                </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-8 bg-[#1F1F1F] overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-8 bg-[#1F1F1F] overflow-hidden relative">
                 <div className="h-full w-auto aspect-[3/4] max-w-full">
                     <img
                         src={prescriptionImage}
@@ -453,24 +1315,36 @@ const DocumentViewer = () => {
 
 const SummaryDetails = () => (
     <>
-        <Card bordered={false} className="shadow-sm mb-4" bodyStyle={{ padding: '20px' }}>
-            <div className="flex justify-between items-center mb-0">
-                <Title level={5} style={{ margin: 0 }}>Shipping method</Title>
-                <Button type="link" icon={<PlusOutlined />} size="small">Add</Button>
-            </div>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-                <InfoCircleOutlined className="mr-1" /> Check with customer during consultancy
-            </Text>
-        </Card>
-        <Card bordered={false} className="shadow-sm mb-4" bodyStyle={{ padding: '20px' }}>
-            <div className="flex justify-between items-center mb-0">
-                <Title level={5} style={{ margin: 0 }}>Payment method</Title>
-                <Button type="link" icon={<PlusOutlined />} size="small">Add</Button>
-            </div>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-                <InfoCircleOutlined className="mr-1" /> Check with customer during consultancy
-            </Text>
-        </Card>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            <h3 className="font-bold text-gray-800 mb-2 text-sm">Shipping method</h3>
+            <Select
+                defaultValue="standard"
+                style={{ width: '100%' }}
+                size="large"
+                className="mb-2"
+                options={[
+                    { value: 'standard', label: 'Standard - Free (Receive within the day)' },
+                    { value: 'express', label: 'Express - 25,000đ (2 hours)' },
+                ]}
+            />
+            <Text type="secondary" className="text-slate-500 text-xs">Check with customer during consultancy</Text>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            <h3 className="font-bold text-gray-800 mb-2 text-sm">Payment method</h3>
+            <Select
+                defaultValue="bank"
+                style={{ width: '100%' }}
+                size="large"
+                className="mb-2"
+                options={[
+                    { value: 'cod', label: 'Cash on Delivery (COD)' },
+                    { value: 'bank', label: 'Bank Transfer' },
+                    { value: 'momo', label: 'Momo Wallet' },
+                ]}
+            />
+            <Text type="secondary" className="text-slate-500 text-xs">Check with customer during consultancy</Text>
+        </div>
         <Card bordered={false} className="shadow-sm mb-4" bodyStyle={{ padding: '20px' }}>
             <div className="flex justify-between items-center mb-0">
                 <Title level={5} style={{ margin: 0 }}>Voucher</Title>
@@ -493,8 +1367,14 @@ const SummaryDetails = () => (
     </>
 )
 
-export default function OrderDetailAntd({ onBack, onConfirm, order }) {
+export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) {
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [localStatus, setLocalStatus] = useState(null);
+
+    // Reset localStatus when order prop changes
+    useEffect(() => {
+        setLocalStatus(null);
+    }, [order]);
 
     // Determine which order data to use (prop or default mock)
     // Also ensuring items are valid if using props
@@ -506,17 +1386,75 @@ export default function OrderDetailAntd({ onBack, onConfirm, order }) {
         created: `Created on ${order.date}`
     } : defaultOrderData;
 
-    const isPaymentStatus = effectiveOrder.status === 'Waiting for Payment' || effectiveOrder.status === 'Pending payment';
+    const currentStatus = localStatus || effectiveOrder.status;
+
+    const isPaymentStatus = ['Waiting for Payment', 'Pending payment', 'Awaiting payment'].includes(currentStatus);
+    const isPackingStatus = ['Packing', 'Ready to pack'].includes(currentStatus);
+    const isReadyToShipStatus = currentStatus === 'Ready to Ship'; // Maps to Wrapper 1 (Looking for driver logic) but initialPacked=true
+    const isDriverPickingUpStatus = currentStatus === 'Driver Picking Up';
+    const isOutForDeliveryStatus = currentStatus === 'Out for Delivery';
+    const isCompletedStatus = currentStatus === 'Completed';
 
     const handleConfirmOrder = () => {
         if (onConfirm) {
-            onConfirm();
+            onConfirm({ ...effectiveOrder, status: 'Waiting for Payment' });
         }
     };
 
+    const handleStatusChange = (newStatus) => {
+        setLocalStatus(newStatus);
+        if (onUpdate) {
+            onUpdate(effectiveOrder.id, newStatus);
+        }
+    }
+
     if (isPaymentStatus) {
         return (
-            <WaitingPaymentLayout orderData={effectiveOrder} onBack={onBack} />
+            <WaitingPaymentLayout
+                orderData={effectiveOrder}
+                onBack={onBack}
+                onConfirmPayment={() => handleStatusChange('Packing')}
+            />
+        );
+    }
+
+    if (isPackingStatus) {
+        return (
+            <ReadyToPackLayout
+                orderData={effectiveOrder}
+                onBack={onBack}
+                initialIsPacked={false}
+                onNext={() => handleStatusChange('Ready to Ship')}
+            />
+        );
+    }
+
+    if (isReadyToShipStatus) {
+        return (
+            <ReadyToPackLayout
+                orderData={effectiveOrder}
+                onBack={onBack}
+                initialIsPacked={true}
+                onNext={() => handleStatusChange('Driver Picking Up')}
+            />
+        );
+    }
+
+    if (isDriverPickingUpStatus) {
+        return (
+            <DriverAssignedLayout orderData={effectiveOrder} onBack={onBack} />
+        );
+    }
+
+    if (isOutForDeliveryStatus) {
+        return (
+            <OutForDeliveryLayout orderData={effectiveOrder} onBack={onBack} />
+        );
+    }
+
+    if (isCompletedStatus) {
+        return (
+            <CompletedLayout orderData={effectiveOrder} onBack={onBack} />
         );
     }
 
@@ -527,7 +1465,7 @@ export default function OrderDetailAntd({ onBack, onConfirm, order }) {
             <OrderHeader
                 onBack={onBack}
                 currentStep={1}
-                statusText="Reviewing"
+                statusText="New"
                 statusColor="geekblue"
                 orderId={effectiveOrder.id}
                 createdDate={effectiveOrder.created}
@@ -543,6 +1481,17 @@ export default function OrderDetailAntd({ onBack, onConfirm, order }) {
                     {/* Right Column: Order Form (45% width) */}
                     <Col flex="0 1 45%" className="h-full overflow-y-auto bg-[#FAFAFA] border-l border-[#F0F0F0]">
                         <div className="p-6">
+                            {/* Status Bar: Review needed */}
+                            <div className="border border-purple-200 bg-purple-50 rounded-lg mb-6 overflow-hidden">
+                                <div className="bg-purple-100 flex items-center gap-2 px-4 py-2 text-purple-900 border-b border-purple-200">
+                                    <ClockCircleOutlined />
+                                    <span className="font-medium">Review needed</span>
+                                </div>
+                                <div className="bg-white px-4 py-3">
+                                    <span className="text-gray-900 font-medium">Pharmacist review of prescriptions is mandatory by health regulations.</span>
+                                </div>
+                            </div>
+
                             <CustomerInfo customer={effectiveOrder.customer} />
                             <ProductList items={effectiveOrder.items} />
                             <SummaryDetails />

@@ -1,8 +1,11 @@
 import React from 'react';
 
-export default function StatsCard({ title, value, subtext, trend }) {
+export default function StatsCard({ title, value, subtext, trend, onClick }) {
     return (
-        <div className="bg-white p-4 rounded-lg border shadow-sm flex flex-col justify-between h-32">
+        <div
+            onClick={onClick}
+            className={`bg-white p-4 rounded-lg border shadow-sm flex flex-col justify-between h-32 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow select-none' : ''}`}
+        >
             <h3 className="text-gray-500 font-medium text-sm">{title}</h3>
             <div className="mt-2">
                 <div className="flex items-baseline gap-2">

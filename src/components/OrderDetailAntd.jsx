@@ -1280,33 +1280,13 @@ const ProductList = ({ items }) => {
 
 const DocumentViewer = () => {
     return (
-        <div className="h-full bg-[#1F1F1F] flex flex-col relative border-r border-[#303030]">
-            <div className="h-10 bg-black flex items-center justify-between px-4">
-                <Text className="text-gray-400 text-xs">Prescription - Uploaded by John Smith</Text>
-                <div className="flex gap-2">
-                    <Button type="text" icon={<PrinterOutlined className="text-gray-400" />} size="small" />
-                    <Button type="text" icon={<DownloadOutlined className="text-gray-400" />} size="small" />
-                </div>
-            </div>
-
-            <div className="flex-1 flex items-center justify-center p-8 bg-[#1F1F1F] overflow-hidden relative">
-                <div className="h-full w-auto aspect-[3/4] max-w-full">
-                    <img
-                        src={prescriptionImage}
-                        alt="Prescription"
-                        className="w-full h-full object-contain"
-                    />
-                </div>
-            </div>
-
-            <div className="h-12 bg-[#141414] border-t border-[#303030] flex justify-between items-center px-4">
-                <Text className="text-gray-400">1 / 1</Text>
-                <Space>
-                    <Button type="text" icon={<MinusOutlined className="text-gray-400" />} />
-                    <Text className="text-gray-400">100%</Text>
-                    <Button type="text" icon={<PlusOutlined className="text-gray-400" />} />
-                </Space>
-                <Button type="text" icon={<ReloadOutlined className="text-gray-400" />} />
+        <div className="h-full bg-gray-100 flex items-center justify-center p-8 border-r border-gray-200">
+            <div className="bg-white shadow-lg rounded-sm overflow-hidden h-full w-auto aspect-[3/4] max-h-[90vh]">
+                <img
+                    src={prescriptionImage}
+                    alt="Prescription"
+                    className="w-full h-full object-contain"
+                />
             </div>
         </div>
     )
@@ -1473,13 +1453,13 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
 
             <div className="flex-1 overflow-hidden">
                 <Row style={{ height: '100%' }}>
-                    {/* Left Column: Document Viewer (55% width) */}
-                    <Col flex="1 1 55%" style={{ height: '100%' }}>
+                    {/* Left Column: Document Viewer (50% width) */}
+                    <Col flex="1 1 50%" style={{ height: '100%' }}>
                         <DocumentViewer />
                     </Col>
 
-                    {/* Right Column: Order Form (45% width) */}
-                    <Col flex="0 1 45%" className="h-full overflow-y-auto bg-[#FAFAFA] border-l border-[#F0F0F0]">
+                    {/* Right Column: Order Form (50% width) */}
+                    <Col flex="0 1 50%" className="h-full overflow-y-auto bg-[#FAFAFA] border-l border-[#F0F0F0]">
                         <div className="p-6">
                             {/* Status Bar: Review needed */}
                             <div className="border border-purple-200 bg-purple-50 rounded-lg mb-6 overflow-hidden">

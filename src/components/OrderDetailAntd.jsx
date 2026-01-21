@@ -179,7 +179,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 flex flex-col overflow-hidden relative">
+            <div className="flex-1 flex flex-col overflow-y-auto relative">
                 {/* Ready to Pack Banner - Fixed */}
                 <div className="z-20 shrink-0 px-8 pt-0 bg-white">
                     <div className="max-w-4xl mx-auto">
@@ -221,7 +221,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-6">
+                <div className="flex-1 px-8 pb-8 pt-6">
                     <div className="max-w-4xl mx-auto space-y-6">
 
 
@@ -1588,7 +1588,7 @@ const OrderReturnedLayout = ({ orderData, onBack }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-2">
+                <div className="flex-1 px-8 pb-8 pt-2">
                     <div className="max-w-4xl mx-auto space-y-6">
                         <Collapse
                             defaultActiveKey={defaultActiveKey}
@@ -1785,7 +1785,7 @@ const OrderCancelledLayout = ({ orderData, onBack }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-2">
+                <div className="flex-1 px-8 pb-8 pt-2">
                     <div className="max-w-4xl mx-auto space-y-6">
                         <Collapse
                             defaultActiveKey={defaultActiveKey}
@@ -2015,8 +2015,8 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                     </Col>
 
                     {/* Right Column: Order Form (50% width) */}
-                    <Col flex="0 1 50%" className="h-full border-l border-[#F0F0F0] flex flex-col bg-[#FAFAFA]">
-                        {/* Status Bar: Review needed - Fixed at top */}
+                    <Col flex="0 1 50%" className="h-full border-l border-[#F0F0F0] flex flex-col bg-[#FAFAFA] overflow-y-auto relative">
+                        {/* Status Bar: Review needed - Scrolls with content now */}
                         <div className="z-20 shadow-sm shrink-0">
                             <div className="border-b border-purple-200 bg-purple-50">
                                 <div className="bg-purple-100 flex items-center gap-2 px-3 py-1.5 text-purple-900 border-b border-purple-200">
@@ -2029,7 +2029,7 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6">
+                        <div className="flex-1 p-6">
 
 
                             <CustomerInfo customer={effectiveOrder.customer} />
@@ -2038,7 +2038,7 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                         </div>
 
                         {/* Footer Actions */}
-                        <div className="bg-white border-t border-[#F0F0F0] px-3 py-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 shrink-0">
+                        <div className="bg-white border-t border-[#F0F0F0] px-3 py-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
                             <div className="flex flex-col items-end gap-2">
                                 <div className="bg-purple-50 border border-purple-200 rounded-md p-2 w-full flex justify-end mb-1">
                                     <Checkbox checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="font-medium text-purple-900 text-xs">

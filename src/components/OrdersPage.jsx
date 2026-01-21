@@ -132,10 +132,13 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                         </div>
                         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm">
                             <Calendar size={16} />
-                            This month
+                            Last 7 days
                         </button>
                         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm">
                             Export
+                        </button>
+                        <button className="flex items-center gap-2 px-4 py-2 bg-[#1D4ED8] text-white rounded-lg hover:bg-blue-800 font-medium text-sm">
+                            Create Order
                         </button>
                     </div>
                 </div>
@@ -148,19 +151,19 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                         trend="+3% from last month"
                         subtext="from last month"
                         onClick={() => handleStatsClick('payment')}
-                        cheatDescription="Simulate 'Payment Received'"
+                        cheatDescription="Demo Cheat: Click 3x - Simulate 'Payment Received'"
                     />
                     <StatsCard
                         title="Prescription"
                         value="80"
                         onClick={() => handleStatsClick('prescription')}
-                        cheatDescription="Simulate 'Driver Pickup'"
+                        cheatDescription="Demo Cheat: Click 3x - Simulate 'Driver Pickup'"
                     />
                     <StatsCard
                         title="Non-Prescription"
                         value="44"
                         onClick={() => handleStatsClick('nonPrescription')}
-                        cheatDescription="Simulate 'Order Handover'"
+                        cheatDescription="Demo Cheat: Click 3x - Simulate 'Order Handover'"
                     />
                 </div>
 

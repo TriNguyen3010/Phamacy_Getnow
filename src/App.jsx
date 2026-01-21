@@ -355,12 +355,17 @@ const GlobalHeader = () => (
     </div>
 );
 
+import LoginPage from './components/LoginPage';
+
 export default function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [orders, setOrders] = useState(mockOrders);
     const [currentView, setCurrentView] = useState('list'); // 'list' or 'detail'
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [notificationTab, setNotificationTab] = useState(null);
     const [homeScrollPos, setHomeScrollPos] = useState(0);
+
+
 
     const [activeTab, setActiveTab] = useState('All');
     const statusLabels = {
@@ -480,6 +485,10 @@ export default function App() {
     React.useEffect(() => {
         setHasLoaded(true);
     }, []);
+    if (!isAuthenticated) {
+        return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+    }
+
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB]">
             <Sidebar collapsed={isSidebarCollapsed} toggleSidebar={() => setSidebarCollapsed(!isSidebarCollapsed)} />

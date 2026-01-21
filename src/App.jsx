@@ -162,7 +162,7 @@ const mockOrders = [
     },
     // Duplicate Ready to Ship
     {
-        id: 'ORD-1008-2',
+        id: 'ORD-1014',
         customer: {
             name: 'Robert Downey',
             phone: '0933 666 777',
@@ -237,7 +237,7 @@ const mockOrders = [
     },
     // Duplicate Out for Delivery
     {
-        id: 'ORD-1006-2',
+        id: 'ORD-1015',
         customer: {
             name: 'Steve Rogers',
             phone: '0911 222 333',

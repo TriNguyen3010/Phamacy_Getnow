@@ -326,7 +326,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                             onClick={isPacked ? null : () => setIsPacked(true)}
                             className={allChecked && !isPacked ? "bg-blue-600" : (isPacked ? "bg-gray-400 border-gray-400" : "")}
                         >
-                            {isPacked ? "Looking for Driver" : "Confirm Packed & Ready to Ship"}
+                            {isPacked ? "Looking for Driver" : "Ready to ship"}
                         </Button>
                     </div>
                 </div>

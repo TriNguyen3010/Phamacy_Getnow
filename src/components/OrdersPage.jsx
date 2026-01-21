@@ -65,9 +65,9 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
 
     // Grouping Logic
     const groups = {
-        'Needs action': ['New', 'Reviewing'],
-        'Queue': ['Waiting for Payment', 'Packing', 'Ready to Ship'],
-        'In transit': ['Driver Picking Up', 'Out for Delivery'],
+        'Needs action': ['New', 'Reviewing', 'Packing'],
+        'Queue': ['Waiting for Payment', 'Ready to Ship'],
+        'In transit': ['Driver Picking Up', 'Out for Delivery', 'Driver Assigned'],
         'Archived': ['Completed', 'Cancelled', 'Returned']
     };
 

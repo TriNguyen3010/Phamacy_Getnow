@@ -107,8 +107,8 @@ const mockOrders = [
         ],
         total: '970,000',
         delivery: 'Standard',
-        note: 'Payment link sent',
-        noteType: 'neutral',
+        note: 'To be cancelled within 30min when no payment',
+        noteType: 'warning',
         action: 'Check details'
     },
     {
@@ -339,7 +339,7 @@ const GlobalHeader = () => (
     <div className="h-16 bg-white border-b border-[#F0F0F0] flex items-center justify-end px-6 gap-4 shrink-0 z-20 relative">
         <Button
             shape="circle"
-            icon={<span role="img" aria-label="mail" className="anticon anticon-mail"><svg viewBox="64 64 896 896" focusable="false" data-icon="mail" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 110.8V792H136V270.8l-27.6-21.5 39.3-50.6 42.8 33.3L643.1 484 912 240l22.9 39.4-38.9 31.4z"></path></svg></span>}
+            icon={<span role="img" aria-label="message" className="anticon anticon-message"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>}
             className="border-gray-200"
         />
         <Button

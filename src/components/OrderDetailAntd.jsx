@@ -130,7 +130,7 @@ const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) 
 // --- Ready To Pack Layout ---
 // --- Ready To Pack Layout ---
 const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false }) => {
-    const defaultActiveKey = ['2']; // Prescription open by default
+    const defaultActiveKey = ['2', '3']; // Prescription open by default
     const [checkedItems, setCheckedItems] = useState({});
     const [isPacked, setIsPacked] = useState(initialIsPacked);
 
@@ -229,7 +229,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                             className="site-collapse-custom-collapse"
                         >
                             {/* Customer Details */}
-                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Customer details")} key="1" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="pl-0 pb-2">
                                     <CustomerInfoSimple customer={orderData.customer} />
                                 </div>
@@ -244,7 +244,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                                     </div>
                                 }
                                 key="2"
-                                className="border-b border-gray-100 py-2"
+                                className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2"
                             >
                                 <div className="pl-0">
                                     <div className="flex justify-between items-center mb-4">
@@ -288,7 +288,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                             </Panel>
 
                             {/* Payment Details */}
-                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Payment details")} key="3" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="space-y-2 pl-0">
                                     <div className="flex justify-between">
                                         <Text className="text-gray-600">Total order</Text>
@@ -301,6 +301,10 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                                     <div className="flex justify-between items-end pt-2">
                                         <Text strong>Total payment</Text>
                                         <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t border-gray-100 mt-2">
+                                        <Text className="text-gray-600">Payment method</Text>
+                                        <Text className="text-gray-900 font-medium">Bank transfer</Text>
                                     </div>
                                 </div>
                             </Panel>
@@ -358,7 +362,7 @@ const CustomerInfoSimple = ({ customer }) => (
 
 // --- Driver Assigned Layout (Ready to Ship) ---
 const DriverAssignedLayout = ({ orderData, onBack }) => {
-    const defaultActiveKey = ['2'];
+    const defaultActiveKey = ['2', '3'];
 
     // Helper to render collapsible header
     const renderHeader = (title, extra) => (
@@ -452,7 +456,7 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                             className="site-collapse-custom-collapse"
                         >
                             {/* Customer Details */}
-                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Customer details")} key="1" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="pl-0 pb-2">
                                     <CustomerInfoSimple customer={orderData.customer} />
                                 </div>
@@ -467,7 +471,7 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                                     </div>
                                 }
                                 key="2"
-                                className="border-b border-gray-100 py-2"
+                                className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2"
                             >
                                 <div className="pl-0">
                                     <div className="flex justify-between items-center mb-4">
@@ -503,7 +507,7 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                             </Panel>
 
                             {/* Payment Details */}
-                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Payment details")} key="3" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="space-y-2 pl-0">
                                     <div className="flex justify-between">
                                         <Text className="text-gray-600">Total order</Text>
@@ -517,6 +521,10 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                                         <Text strong>Total payment</Text>
                                         <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
                                     </div>
+                                    <div className="flex justify-between pt-2 border-t border-gray-100 mt-2">
+                                        <Text className="text-gray-600">Payment method</Text>
+                                        <Text className="text-gray-900 font-medium">Bank transfer</Text>
+                                    </div>
                                 </div>
                             </Panel>
                         </Collapse>
@@ -525,8 +533,7 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
 
                 {/* Footer */}
                 <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
-                    <div className="max-w-4xl mx-auto flex flex-col items-end gap-2">
-                        <Text type="secondary" style={{ fontSize: '12px' }}>Drivers usually scan, use this only if scanning fails</Text>
+                    <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
                         <Button size="large">
                             Contact Support
                         </Button>
@@ -539,7 +546,7 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
 
 // --- Out For Delivery Layout ---
 const OutForDeliveryLayout = ({ orderData, onBack }) => {
-    const defaultActiveKey = ['2'];
+    const defaultActiveKey = ['2', '3'];
 
     // Helper to render collapsible header
     const renderHeader = (title, extra) => (
@@ -637,7 +644,7 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                             className="site-collapse-custom-collapse"
                         >
                             {/* Customer Details */}
-                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Customer details")} key="1" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="pl-0 pb-2">
                                     <CustomerInfoSimple customer={orderData.customer} />
                                 </div>
@@ -652,7 +659,7 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                                     </div>
                                 }
                                 key="2"
-                                className="border-b border-gray-100 py-2"
+                                className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2"
                             >
                                 <div className="pl-0">
                                     <div className="flex justify-between items-center mb-4">
@@ -688,7 +695,7 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                             </Panel>
 
                             {/* Payment Details */}
-                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Payment details")} key="3" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="space-y-2 pl-0">
                                     <div className="flex justify-between">
                                         <Text className="text-gray-600">Total order</Text>
@@ -701,6 +708,10 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                                     <div className="flex justify-between items-end pt-2">
                                         <Text strong>Total payment</Text>
                                         <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t border-gray-100 mt-2">
+                                        <Text className="text-gray-600">Payment method</Text>
+                                        <Text className="text-gray-900 font-medium">Bank transfer</Text>
                                     </div>
                                 </div>
                             </Panel>
@@ -723,7 +734,7 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
 
 // --- Completed Layout ---
 const CompletedLayout = ({ orderData, onBack }) => {
-    const defaultActiveKey = ['2'];
+    const defaultActiveKey = ['2', '3'];
     const [rating, setRating] = useState(5);
 
     // Helper to render collapsible header
@@ -853,7 +864,7 @@ const CompletedLayout = ({ orderData, onBack }) => {
                                     </div>
                                 }
                                 key="2"
-                                className="border-b border-gray-100 py-2"
+                                className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2"
                             >
                                 <div className="pl-0">
                                     <div className="flex justify-between items-center mb-4">
@@ -905,6 +916,10 @@ const CompletedLayout = ({ orderData, onBack }) => {
                                     <div className="flex justify-between items-end pt-2">
                                         <Text strong>Total payment</Text>
                                         <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t border-gray-100 mt-2">
+                                        <Text className="text-gray-600">Payment method</Text>
+                                        <Text className="text-gray-900 font-medium">Bank transfer</Text>
                                     </div>
                                 </div>
                             </Panel>
@@ -990,7 +1005,7 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
                             className="site-collapse-custom-collapse"
                         >
                             {/* Customer Details */}
-                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Customer details")} key="1" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="pl-0 pb-2">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -1018,7 +1033,7 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
                                     </div>
                                 }
                                 key="2"
-                                className="border-b border-gray-100 py-2"
+                                className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2"
                             >
                                 <div className="pl-0">
                                     <div className="flex justify-between items-center mb-4">
@@ -1055,7 +1070,7 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
                             </Panel>
 
                             {/* Payment Details */}
-                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                            <Panel header={renderHeader("Payment details")} key="3" className="border border-gray-200 rounded-lg mb-4 bg-white overflow-hidden py-2">
                                 <div className="space-y-2 pl-0">
                                     <div className="flex justify-between">
                                         <Text className="text-gray-600">Total order</Text>

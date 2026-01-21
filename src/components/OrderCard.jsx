@@ -35,9 +35,9 @@ const StatusBadge = ({ status }) => {
             case 'Complete':
                 return 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]'; // Green
             case 'Cancelled':
-                return 'bg-gray-100 text-gray-600 border-gray-200'; // Gray
+                return 'bg-gray-100 text-gray-600 border-gray-300'; // Gray
             default:
-                return 'bg-gray-100 text-gray-600 border-gray-200';
+                return 'bg-gray-100 text-gray-600 border-gray-300';
         }
     };
 
@@ -78,7 +78,7 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function OrderCard({ order, onClick, group, highlighted }) {
-    const [expanded, setExpanded] = React.useState(false);
+    const [expandLevel, setExpandLevel] = React.useState(0);
     const item = order.items[0] || {}; // Display first item for summary
 
     // Delivery Icon
@@ -110,10 +110,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
         return 'text-gray-500';
     };
 
-    const toggleExpand = (e) => {
-        e.stopPropagation();
-        setExpanded(!expanded);
-    };
+
 
     const getHighlightColor = () => {
         switch (group) {
@@ -128,11 +125,11 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
     return (
         <div
             id={`order-card-${order.id}`}
-            className={`bg-white border border-t border-r border-b border-gray-200 rounded-lg p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all cursor-default ${getBorderClass()}`}
+            className={`bg-white border border-t border-r border-b border-gray-300 rounded-lg p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all cursor-default ${getBorderClass()}`}
             style={highlighted ? { '--highlight-rgb': getHighlightColor() } : {}}
         >
             {/* Top Row: Order Meta & Status */}
-            <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+            <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
                 <div className="flex items-center gap-3 text-xs text-gray-500">
                     <span className="font-bold text-gray-900 text-base">{order.id}</span>
                     <div className="w-px h-3 bg-gray-300 mx-1"></div>
@@ -153,17 +150,12 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
                 <div>
                     <div className="font-bold text-gray-900 text-sm mb-3">{order.category}</div>
 
-                    <div className="mb-2">
-                        <span className="text-xs font-semibold text-gray-500 block mb-1">Prescription</span>
-                        <div className="text-blue-600 text-xs font-medium flex items-center gap-1">
-                            {order.itemsCount} item(s)
-                        </div>
-                    </div>
+
 
                     <div className="space-y-3 mt-3">
-                        {order.items.slice(0, 3).map((itm, idx) => (
+                        {order.items.slice(0, expandLevel === 0 ? 1 : 4).map((itm, idx) => (
                             <div key={idx} className="flex gap-3 items-start">
-                                <div className="w-10 h-10 bg-gray-50 rounded border border-gray-200 flex items-center justify-center p-0.5 flex-shrink-0">
+                                <div className="w-10 h-10 bg-gray-50 rounded border border-gray-300 flex items-center justify-center p-0.5 flex-shrink-0">
                                     <img src={itm.image} alt={itm.name} className="w-full h-full object-contain" />
                                 </div>
                                 <div>
@@ -176,12 +168,21 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
                             </div>
                         ))}
 
-                        {order.items.length > 3 && (
+                        {order.items.length > 1 && (
                             <button
-                                onClick={(e) => { e.stopPropagation(); onClick(); }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (expandLevel === 0) {
+                                        setExpandLevel(1);
+                                    } else {
+                                        onClick();
+                                    }
+                                }}
                                 className="text-xs font-medium text-gray-500 hover:text-blue-600 hover:bg-gray-50 px-2 py-1 rounded transition-colors w-full text-left"
                             >
-                                + {order.items.length - 3} more items...
+                                {expandLevel === 0
+                                    ? `+ ${order.items.length - 1} more items...`
+                                    : "View full details"}
                             </button>
                         )}
                     </div>
@@ -229,7 +230,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
 
                 <div className="flex flex-col items-end justify-between h-full pt-1 pb-1">
                     <div className="mb-auto">
-                        {order.action !== 'Check details' && order.action !== 'Review & Consult' && (
+                        {order.action !== 'Check details' && order.action !== 'Consult' && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onClick(); }}
                                 className="bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-2 rounded-md shadow-sm hover:bg-blue-800 transition-colors flex items-center gap-1"
@@ -239,12 +240,12 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
                         )}
                     </div>
 
-                    {order.action === 'Review & Consult' ? (
+                    {order.action === 'Consult' ? (
                         <button
                             onClick={(e) => { e.stopPropagation(); onClick(); }}
                             className="bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-1.5 rounded-md shadow-sm hover:bg-blue-800 transition-colors flex items-center gap-1"
                         >
-                            Review & Consult <ChevronDown size={12} className="-rotate-90" />
+                            Consult <ChevronDown size={12} className="-rotate-90" />
                         </button>
                     ) : (
                         <button

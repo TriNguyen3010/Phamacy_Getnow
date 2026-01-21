@@ -127,14 +127,14 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                             <input
                                 type="text"
                                 placeholder="Search order, customer..."
-                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg w-[300px] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                                className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg w-[300px] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                             />
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm">
+                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm">
                             <Calendar size={16} />
                             This month
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm">
+                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm">
                             Export
                         </button>
                     </div>
@@ -165,10 +165,10 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                 </div>
 
                 {/* Main Content Card */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[600px] flex flex-col">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-300 min-h-[600px] flex flex-col">
 
                     {/* Tabs & Filter */}
-                    <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-xl">
+                    <div className="border-b border-gray-300 px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-xl">
                         <div className="flex gap-8">
                             {tabs.map(tab => (
                                 <button
@@ -193,14 +193,14 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                                 </button>
                             ))}
                         </div>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">
                             <Filter size={14} />
                             Filter
                         </button>
                     </div>
 
                     {/* Table Header */}
-                    <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_1fr] gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500">
+                    <div className="grid grid-cols-[2.5fr_1fr_1fr_1.5fr_1fr] gap-4 px-6 py-3 bg-gray-50 border-b border-gray-300 text-xs font-semibold text-gray-500">
                         <div>Order(s)</div>
                         <div>Order total</div>
                         <div>Delivery method</div>
@@ -265,7 +265,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                     </div>
 
                     {/* Pagination */}
-                    <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-2">
+                    <div className="border-t border-gray-300 px-6 py-4 flex justify-end gap-2">
                         <button className="w-8 h-8 flex items-center justify-center border rounded bg-white text-gray-400 hover:bg-gray-50 text-sm">&lt;</button>
                         <button className="w-8 h-8 flex items-center justify-center border rounded bg-white text-gray-900 border-gray-300 font-medium text-sm">1</button>
                         <button className="w-8 h-8 flex items-center justify-center border rounded bg-white text-gray-600 hover:bg-gray-50 text-sm">2</button>

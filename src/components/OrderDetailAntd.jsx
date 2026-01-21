@@ -93,33 +93,33 @@ const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) 
     ];
 
     return (
-        <div className="bg-white border-b border-[#F0F0F0] px-6 py-4">
+        <div className="bg-white border-b border-[#F0F0F0] px-6 py-1">
             <Row justify="space-between" align="middle" style={{ height: '100%' }}>
                 <Col flex="1">
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-center gap-2">
                         <Button
                             type="text"
-                            icon={<ArrowLeftOutlined style={{ fontSize: '16px' }} />}
+                            icon={<ArrowLeftOutlined style={{ fontSize: '14px' }} />}
                             onClick={onBack}
-                            className="text-gray-500 hover:bg-gray-100 rounded-full"
+                            className="text-gray-500 hover:bg-gray-100 rounded-full w-8 h-8 min-w-[32px]"
                         />
                         <div>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>Order number</Text>
-                            <div className="flex items-center gap-2 mt-1">
-                                <Title level={3} style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>{orderId}</Title>
+                            <div className="flex items-baseline gap-2">
+                                <Text type="secondary" style={{ fontSize: '11px' }}>Order number</Text>
+                                <Title level={3} style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{orderId}</Title>
                             </div>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>{createdDate}</Text>
+                            <Text type="secondary" style={{ fontSize: '11px', display: 'block', lineHeight: '1' }}>{createdDate}</Text>
                         </div>
                     </div>
                 </Col>
 
-                <Col flex="600px" className="pl-6">
+                <Col flex="500px" className="pl-6">
                     <Steps
                         size="small"
                         current={currentStep}
                         items={stepItems}
-                        labelPlacement="vertical"
-                        className="custom-steps w-full"
+                        labelPlacement="vertical" // Keep vertical labels but maybe we can style them smaller via CSS if needed, but standard small is okay.
+                        className="custom-steps w-full scale-90 origin-right" // Scale down the steps slightly to match the "50%" request vibe
                     />
                 </Col>
             </Row>
@@ -184,32 +184,32 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                                 {isPacked ? <CarOutlined /> : <DropboxOutlined />}
                                 <span className="font-medium">{isPacked ? "Ready to ship" : "Ready to pack"}</span>
                             </div>
-                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircleOutlined className="text-2xl text-[#13854e]" />
+                            <div className="bg-white p-2 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                <div className="flex justify-between items-start mb-1">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircleOutlined className="text-lg text-[#13854e]" />
                                         <div>
-                                            <Title level={4} style={{ margin: 0 }}>
+                                            <Text strong className="text-sm block">
                                                 {isPacked ? "We’ll assign a driver to pick up your order..." : "Payment confirmed. Safe to dispense."}
-                                            </Title>
+                                            </Text>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-2 items-end">
-                                        <Button icon={<PrinterOutlined />}>Print Shipping Label</Button>
-                                        <Button>Preview Shipping Label</Button>
+                                    <div className="flex flex-col gap-1 items-end">
+                                        <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<PrinterOutlined />}>Print Label</Button>
+                                        <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }}>Preview Label</Button>
                                     </div>
                                 </div>
-                                <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-4">
+                                <div className="flex justify-between items-center pt-1 border-t border-gray-100 mt-1">
                                     <div>
-                                        <span className="text-gray-500 text-xs block">Shipping method</span>
-                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <span className="text-gray-500 text-[10px] block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900 text-xs">
                                             <TruckIconSmall />
                                             Standard - Receive within 24hrs
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-gray-500 text-xs block">Delivery deadline</span>
-                                        <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                        <span className="text-gray-500 text-[10px] block">Delivery deadline</span>
+                                        <span className="font-bold text-gray-900 text-xs">12:51 PM tomorrow</span>
                                     </div>
                                 </div>
                             </div>
@@ -391,53 +391,53 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                                 <CarOutlined />
                                 <span className="font-medium">Driver assigned</span>
                             </div>
-                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                            <div className="bg-white p-2 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
                                 {/* Headline & Reprint */}
-                                <div className="flex justify-between items-start mb-6">
-                                    <Title level={4} style={{ margin: 0 }}>Driver Assigned: Tai Pham is arriving.</Title>
-                                    <Button icon={<PrinterOutlined />}>Reprint Shipping Label</Button>
+                                <div className="flex justify-between items-start mb-2">
+                                    <Text strong className="text-sm block">Driver Assigned: Tai Pham is arriving.</Text>
+                                    <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<PrinterOutlined />}>Reprint Label</Button>
                                 </div>
 
                                 {/* Driver Info Grid */}
-                                <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
+                                <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-2 items-center mb-2">
                                     {/* Avatar */}
-                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                    <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                                         {/* Mock Avatar */}
                                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
                                     </div>
                                     {/* Name */}
                                     <div>
-                                        <Text type="secondary" className="block text-xs">Driver's name</Text>
-                                        <Text strong>Tai Pham</Text>
+                                        <Text type="secondary" className="block text-[10px]">Driver</Text>
+                                        <Text strong className="text-xs">Tai Pham</Text>
                                     </div>
                                     {/* Phone */}
                                     <div>
-                                        <Text type="secondary" className="block text-xs">Phone number</Text>
-                                        <Text strong>078 389 270</Text>
+                                        <Text type="secondary" className="block text-[10px]">Phone</Text>
+                                        <Text strong className="text-xs">078 389 270</Text>
                                     </div>
                                     {/* License */}
                                     <div>
-                                        <Text type="secondary" className="block text-xs">License plate</Text>
-                                        <Text strong>59-X1 123.45</Text>
+                                        <Text type="secondary" className="block text-[10px]">License</Text>
+                                        <Text strong className="text-xs">59-X1 123.45</Text>
                                     </div>
                                     {/* Location Button */}
                                     <div>
-                                        <Button icon={<ExportOutlined />}>View location</Button>
+                                        <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<ExportOutlined />}>Location</Button>
                                     </div>
                                 </div>
 
                                 {/* Shipping Details */}
-                                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <div className="flex justify-between items-center pt-1 border-t border-gray-100">
                                     <div>
-                                        <span className="text-gray-500 text-xs block">Shipping method</span>
-                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <span className="text-gray-500 text-[10px] block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900 text-xs">
                                             <TruckIconSmall />
                                             Standard - Receive within 24hrs
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-gray-500 text-xs block">Delivery deadline</span>
-                                        <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                        <span className="text-gray-500 text-[10px] block">Delivery deadline</span>
+                                        <span className="font-bold text-gray-900 text-xs">12:51 PM tomorrow</span>
                                     </div>
                                 </div>
                             </div>
@@ -575,57 +575,57 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                                 <TruckIconSmall />
                                 <span className="font-medium">Out for Delivery</span>
                             </div>
-                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                            <div className="bg-white p-2 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
                                 {/* Headline & Report */}
-                                <div className="flex justify-between items-start mb-2">
+                                <div className="flex justify-between items-start mb-1">
                                     <div>
-                                        <Title level={4} style={{ margin: 0 }}>Your order is on the way to deliver.</Title>
-                                        <Text type="secondary" className="text-xs">Estimated arrival time: Today, before 7:00 PM</Text>
+                                        <Text strong className="text-sm block">Your order is on the way to deliver.</Text>
+                                        <Text type="secondary" className="text-[10px]">Estimated arrival time: Today, before 7:00 PM</Text>
                                     </div>
-                                    <Button>Report delivery issue</Button>
+                                    <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }}>Report issue</Button>
                                 </div>
 
-                                <Divider dashed style={{ margin: '16px 0' }} />
+                                <Divider dashed style={{ margin: '4px 0' }} />
 
                                 {/* Driver Info Grid */}
-                                <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
+                                <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-2 items-center mb-1">
                                     {/* Avatar */}
-                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                    <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
                                     </div>
                                     {/* Name */}
                                     <div>
-                                        <Text type="secondary" className="block text-xs">Driver's name</Text>
-                                        <Text strong>Tai Pham</Text>
+                                        <Text type="secondary" className="block text-[10px]">Driver</Text>
+                                        <Text strong className="text-xs">Tai Pham</Text>
                                     </div>
                                     {/* Phone */}
                                     <div>
-                                        <Text type="secondary" className="block text-xs">Phone number</Text>
-                                        <Text strong>078 389 270</Text>
+                                        <Text type="secondary" className="block text-[10px]">Phone</Text>
+                                        <Text strong className="text-xs">078 389 270</Text>
                                     </div>
                                     {/* License */}
                                     <div>
-                                        <Text type="secondary" className="block text-xs">License plate</Text>
-                                        <Text strong>59-X1 123.45</Text>
+                                        <Text type="secondary" className="block text-[10px]">License</Text>
+                                        <Text strong className="text-xs">59-X1 123.45</Text>
                                     </div>
                                     {/* Track Button */}
                                     <div>
-                                        <Button icon={<ExportOutlined />}>Track shipment</Button>
+                                        <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<ExportOutlined />}>Track</Button>
                                     </div>
                                 </div>
 
                                 {/* Shipping Details */}
-                                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <div className="flex justify-between items-center pt-1 border-t border-gray-100">
                                     <div>
-                                        <span className="text-gray-500 text-xs block">Shipping method</span>
-                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <span className="text-gray-500 text-[10px] block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900 text-xs">
                                             <TruckIconSmall />
                                             Standard - Receive within 24hrs
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-gray-500 text-xs block">Delivery deadline</span>
-                                        <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                        <span className="text-gray-500 text-[10px] block">Delivery deadline</span>
+                                        <span className="font-bold text-gray-900 text-xs">12:51 PM tomorrow</span>
                                     </div>
                                 </div>
                             </div>
@@ -764,73 +764,73 @@ const CompletedLayout = ({ orderData, onBack }) => {
                                 <CheckCircleOutlined />
                                 <span className="font-medium">Order complete</span>
                             </div>
-                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                            <div className="bg-white p-2 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
                                 {/* Headline & Print */}
-                                <div className="flex justify-between items-start mb-2">
+                                <div className="flex justify-between items-start mb-1">
                                     <div>
-                                        <Title level={4} style={{ margin: 0 }}>Order was successfully delivered.</Title>
-                                        <Text type="secondary" className="text-xs">Delivered on: 2026-01-15, 17:18:15 PM</Text>
+                                        <Text strong className="text-sm block">Order was successfully delivered.</Text>
+                                        <Text type="secondary" className="text-[10px]">Delivered on: 2026-01-15, 17:18 PM</Text>
                                     </div>
-                                    <Button icon={<PrinterOutlined />}>Print invoice</Button>
+                                    <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<PrinterOutlined />}>Print invoice</Button>
                                 </div>
 
-                                <Divider dashed style={{ margin: '16px 0' }} />
+                                <Divider dashed style={{ margin: '4px 0' }} />
 
                                 {/* Driver Info Row */}
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
                                         {/* Avatar */}
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
                                             </div>
                                             <div>
-                                                <Text type="secondary" className="block text-xs">Driver's name</Text>
-                                                <Text strong>Tai Pham</Text>
+                                                <Text type="secondary" className="block text-[10px]">Driver</Text>
+                                                <Text strong className="text-xs">Tai Pham</Text>
                                             </div>
                                         </div>
                                         {/* Phone */}
                                         <div>
-                                            <Text type="secondary" className="block text-xs">Phone number</Text>
-                                            <Text strong>078 389 270</Text>
+                                            <Text type="secondary" className="block text-[10px]">Phone</Text>
+                                            <Text strong className="text-xs">078 389 270</Text>
                                         </div>
                                         {/* License */}
                                         <div>
-                                            <Text type="secondary" className="block text-xs">License plate</Text>
-                                            <Text strong>59-X1 123.45</Text>
+                                            <Text type="secondary" className="block text-[10px]">License</Text>
+                                            <Text strong className="text-xs">59-X1 123.45</Text>
                                         </div>
                                     </div>
                                     {/* Track Button */}
-                                    <Button icon={<ExportOutlined />}>Track shipment</Button>
+                                    <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<ExportOutlined />}>Track</Button>
                                 </div>
 
                                 {/* Rating Section */}
-                                <div className="mb-6">
-                                    <Text type="secondary" className="block text-xs mb-1">Rating the pickup speed/attitude</Text>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex gap-1 text-2xl cursor-pointer">
+                                <div className="mb-2">
+                                    <Text type="secondary" className="block text-[10px] mb-0.5">Rating the pickup speed/attitude</Text>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-0.5 text-lg cursor-pointer">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <span key={star} onClick={() => setRating(star)} className="text-[#4F46E5] hover:scale-110 transition-transform">
                                                     {star <= rating ? <StarFilled /> : <StarOutlined />}
                                                 </span>
                                             ))}
                                         </div>
-                                        <Button type="primary" size="small" className="bg-blue-600">Submit</Button>
+                                        <Button type="primary" size="small" className="bg-blue-600 text-[10px] h-5 px-2">Submit</Button>
                                     </div>
                                 </div>
 
                                 {/* Shipping Details */}
-                                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                <div className="flex justify-between items-center pt-1 border-t border-gray-100">
                                     <div>
-                                        <span className="text-gray-500 text-xs block">Shipping method</span>
-                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                        <span className="text-gray-500 text-[10px] block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900 text-xs">
                                             <TruckIconSmall />
                                             Standard - Receive within 24hrs
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-gray-500 text-xs block">Delivered on</span>
-                                        <span className="font-bold text-gray-900">2026-01-15, 17:18:15 PM</span>
+                                        <span className="text-gray-500 text-[10px] block">Delivered on</span>
+                                        <span className="font-bold text-gray-900 text-xs">2026-01-15, 17:18 PM</span>
                                     </div>
                                 </div>
                             </div>
@@ -971,23 +971,23 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
                                 <WalletOutlined />
                                 <span className="font-medium">Awaiting payment</span>
                             </div>
-                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
-                                <div className="flex justify-between items-start mb-4">
+                            <div className="bg-white p-2 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                <div className="flex justify-between items-start mb-1">
                                     <div>
-                                        <div className="text-gray-500 text-xs">Total due:</div>
-                                        <div className="text-2xl font-bold text-gray-900">791,800₫</div>
+                                        <div className="text-gray-500 text-[10px]">Total due:</div>
+                                        <div className="text-lg font-bold text-gray-900">791,800₫</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-gray-500 text-xs text-right">Holds order for:</div>
-                                        <div className="text-xl font-bold text-gray-900">14:59</div>
+                                        <div className="text-gray-500 text-[10px] text-right">Holds order for:</div>
+                                        <div className="text-base font-bold text-gray-900">14:59</div>
                                     </div>
                                 </div>
-                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                <div className="flex justify-between items-center pt-1 border-t border-gray-100">
                                     <div>
-                                        <span className="text-gray-500 text-xs block">Payment method</span>
-                                        <span className="font-medium text-gray-900">Bank Transfer</span>
+                                        <span className="text-gray-500 text-[10px] block">Payment method</span>
+                                        <span className="font-medium text-gray-900 text-xs">Bank Transfer</span>
                                     </div>
-                                    <Button size="middle">Remind Customer</Button>
+                                    <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }}>Remind Customer</Button>
                                 </div>
                             </div>
                         </div>
@@ -1617,12 +1617,12 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                         {/* Status Bar: Review needed - Fixed at top */}
                         <div className="z-20 shadow-sm shrink-0">
                             <div className="border-b border-purple-200 bg-purple-50">
-                                <div className="bg-purple-100 flex items-center gap-2 px-6 py-3 text-purple-900 border-b border-purple-200">
+                                <div className="bg-purple-100 flex items-center gap-2 px-3 py-1.5 text-purple-900 border-b border-purple-200">
                                     <ClockCircleOutlined />
-                                    <span className="font-medium">Review needed</span>
+                                    <span className="font-medium text-sm">Review needed</span>
                                 </div>
-                                <div className="bg-white px-6 py-3 border-b border-purple-100">
-                                    <span className="text-gray-900 font-medium">Pharmacist review of prescriptions is mandatory by health regulations.</span>
+                                <div className="bg-white px-3 py-1.5 border-b border-purple-100">
+                                    <span className="text-gray-900 font-medium text-xs">Pharmacist review of prescriptions is mandatory by health regulations.</span>
                                 </div>
                             </div>
                         </div>
@@ -1636,16 +1636,16 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                         </div>
 
                         {/* Footer Actions */}
-                        <div className="bg-white border-t border-[#F0F0F0] px-6 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 shrink-0">
-                            <div className="flex flex-col items-end gap-3">
-                                <div className="bg-purple-50 border border-purple-200 rounded-md p-3 w-full flex justify-end mb-2">
-                                    <Checkbox checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="font-medium text-purple-900">
+                        <div className="bg-white border-t border-[#F0F0F0] px-3 py-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 shrink-0">
+                            <div className="flex flex-col items-end gap-2">
+                                <div className="bg-purple-50 border border-purple-200 rounded-md p-2 w-full flex justify-end mb-1">
+                                    <Checkbox checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="font-medium text-purple-900 text-xs">
                                         I have consulted the customer and carefully checked the order <span className="text-red-500">*</span>
                                     </Checkbox>
                                 </div>
                                 <Space>
-                                    <Button size="large">Decline order</Button>
-                                    <Button size="large" type="primary" disabled={!isConfirmed} onClick={handleConfirmOrder}>Confirm order</Button>
+                                    <Button>Decline order</Button>
+                                    <Button type="primary" disabled={!isConfirmed} onClick={handleConfirmOrder}>Confirm order</Button>
                                 </Space>
                             </div>
                         </div>

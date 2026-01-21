@@ -39,7 +39,7 @@ const mockOrders = [
         delivery: 'Not defined',
         note: 'New order received',
         noteType: 'info',
-        action: 'Review & Consult'
+        action: 'Consult'
     },
     {
         id: 'ORD-1013',
@@ -61,7 +61,7 @@ const mockOrders = [
         delivery: 'Standard',
         note: 'New order received',
         noteType: 'info',
-        action: 'Review & Consult'
+        action: 'Consult'
     },
     {
         id: 'ORD-1011',
@@ -84,7 +84,7 @@ const mockOrders = [
         delivery: 'Standard',
         note: 'Pharmacist is reviewing',
         noteType: 'warning',
-        action: 'Review & Consult'
+        action: 'Consult'
     },
 
     // --- Queue ---
@@ -378,7 +378,7 @@ export default function App() {
 
     const handleUpdateOrder = (orderId, newStatus) => {
         let newAction = 'Check details';
-        if (['Reviewing', 'New'].includes(newStatus)) newAction = 'Review & Consult';
+        if (['Reviewing', 'New'].includes(newStatus)) newAction = 'Consult';
         else if (newStatus === 'Packing') newAction = 'Print label';
         else if (['Driver Picking Up', 'Ready to Ship', 'Out for Delivery'].includes(newStatus)) newAction = 'Check details';
 

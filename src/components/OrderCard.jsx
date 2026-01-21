@@ -200,7 +200,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
                 {/* 2. Total */}
                 <div className="flex items-center h-full">
                     <span className="font-medium text-sm text-gray-900">
-                        <span className="text-gray-400 text-xs italic mr-1">(draft)</span> {order.total} VND
+                        {order.total} VND
                     </span>
                 </div>
 
@@ -228,7 +228,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
 
                 <div className="flex flex-col items-end justify-between h-full pt-1 pb-1">
                     <div className="mb-auto">
-                        {order.action !== 'Check details' && (
+                        {order.action !== 'Check details' && order.action !== 'Review & Consult' && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onClick(); }}
                                 className="bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-2 rounded-md shadow-sm hover:bg-blue-800 transition-colors flex items-center gap-1"
@@ -238,12 +238,21 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
                         )}
                     </div>
 
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onClick(); }}
-                        className="text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 text-xs font-semibold px-4 py-1.5 rounded-md transition-colors flex items-center gap-1"
-                    >
-                        Check details <ChevronDown size={14} className="-rotate-90" />
-                    </button>
+                    {order.action === 'Review & Consult' ? (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onClick(); }}
+                            className="bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-1.5 rounded-md shadow-sm hover:bg-blue-800 transition-colors flex items-center gap-1"
+                        >
+                            Review & Consult <ChevronDown size={12} className="-rotate-90" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onClick(); }}
+                            className="text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 text-xs font-semibold px-4 py-1.5 rounded-md transition-colors flex items-center gap-1"
+                        >
+                            Check details <ChevronDown size={14} className="-rotate-90" />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

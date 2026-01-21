@@ -814,12 +814,15 @@ const CompletedLayout = ({ orderData, onBack }) => {
                             {/* Rating Section */}
                             <div className="mb-6">
                                 <Text type="secondary" className="block text-xs mb-1">Rating the pickup speed/attitude</Text>
-                                <div className="flex gap-1 text-2xl cursor-pointer">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <span key={star} onClick={() => setRating(star)} className="text-[#4F46E5] hover:scale-110 transition-transform">
-                                            {star <= rating ? <StarFilled /> : <StarOutlined />}
-                                        </span>
-                                    ))}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex gap-1 text-2xl cursor-pointer">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <span key={star} onClick={() => setRating(star)} className="text-[#4F46E5] hover:scale-110 transition-transform">
+                                                {star <= rating ? <StarFilled /> : <StarOutlined />}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <Button type="primary" size="small" className="bg-blue-600">Submit</Button>
                                 </div>
                             </div>
 
@@ -1356,6 +1359,28 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
         setLocalStatus(null);
     }, [order]);
 
+    // Auto-scroll to top when component mounts or order changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [order]);
+
+    // Handle ESC key to go back
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                onBack();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        // Cleanup event listener on unmount
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [onBack]);
+
+
     // Determine which order data to use (prop or default mock)
     // Also ensuring items are valid if using props
     const effectiveOrder = order ? {
@@ -1459,8 +1484,8 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                     </Col>
 
                     {/* Right Column: Order Form (50% width) */}
-                    <Col flex="0 1 50%" className="h-full overflow-y-auto bg-[#FAFAFA] border-l border-[#F0F0F0]">
-                        <div className="p-6">
+                    <Col flex="0 1 50%" className="h-full border-l border-[#F0F0F0] flex flex-col bg-[#FAFAFA]">
+                        <div className="flex-1 overflow-y-auto p-6">
                             {/* Status Bar: Review needed */}
                             <div className="border border-purple-200 bg-purple-50 rounded-lg mb-6 overflow-hidden">
                                 <div className="bg-purple-100 flex items-center gap-2 px-4 py-2 text-purple-900 border-b border-purple-200">
@@ -1476,19 +1501,23 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
                             <ProductList items={effectiveOrder.items} />
                             <SummaryDetails />
                         </div>
+
+                        {/* Footer Actions */}
+                        <div className="bg-white border-t border-[#F0F0F0] px-6 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 shrink-0">
+                            <div className="flex flex-col items-end gap-3">
+                                <div className="bg-purple-50 border border-purple-200 rounded-md p-3 w-full flex justify-end mb-2">
+                                    <Checkbox checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)} className="font-medium text-purple-900">
+                                        I have consulted the customer and carefully checked the order <span className="text-red-500">*</span>
+                                    </Checkbox>
+                                </div>
+                                <Space>
+                                    <Button size="large">Decline order</Button>
+                                    <Button size="large" type="primary" disabled={!isConfirmed} onClick={handleConfirmOrder}>Confirm order</Button>
+                                </Space>
+                            </div>
+                        </div>
                     </Col>
                 </Row>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10">
-                <div className="flex flex-col items-end gap-3">
-                    <Checkbox checked={isConfirmed} onChange={(e) => setIsConfirmed(e.target.checked)}>I have consulted the customer and carefully checked the order <span className="text-red-500">*</span></Checkbox>
-                    <Space>
-                        <Button size="large">Decline order</Button>
-                        <Button size="large" type="primary" disabled={!isConfirmed} onClick={handleConfirmOrder}>Confirm order</Button>
-                    </Space>
-                </div>
             </div>
         </div>
     );

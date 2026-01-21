@@ -186,7 +186,7 @@ const mockOrders = [
         delivery: 'Instant',
         note: 'Driver assigned: Tai Pham',
         noteType: 'info',
-        action: 'Track shipment'
+        action: 'Check details'
     },
     {
         id: 'ORD-1006',
@@ -210,7 +210,7 @@ const mockOrders = [
         delivery: 'Standard',
         note: 'Arriving by 5:00 PM',
         noteType: 'neutral',
-        action: 'Track shipment'
+        action: 'Check details'
     },
     // Duplicate Out for Delivery
     {
@@ -234,7 +234,7 @@ const mockOrders = [
         delivery: 'Instant',
         note: 'Arriving soon',
         noteType: 'neutral',
-        action: 'Track shipment'
+        action: 'Check details'
     },
 
     // --- Archived ---
@@ -319,13 +319,11 @@ export default function App() {
     const [notificationTab, setNotificationTab] = useState(null);
 
     const [activeTab, setActiveTab] = useState('All');
-
     const handleUpdateOrder = (orderId, newStatus) => {
         let newAction = 'Check details';
         if (['Reviewing', 'New'].includes(newStatus)) newAction = 'Review & Consult';
         else if (newStatus === 'Packing') newAction = 'Print label';
-        else if (['Driver Picking Up', 'Out for Delivery'].includes(newStatus)) newAction = 'Track shipment';
-        else if (newStatus === 'Ready to Ship') newAction = 'Check details';
+        else if (['Driver Picking Up', 'Ready to Ship', 'Out for Delivery'].includes(newStatus)) newAction = 'Check details';
 
         setOrders(prevOrders => prevOrders.map(o =>
             o.id === orderId ? { ...o, status: newStatus, updated: 'Just now', action: newAction } : o

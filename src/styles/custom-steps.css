@@ -1,0 +1,56 @@
+/* Custom Ant Design Steps overrides to match design */
+
+/* 1. Finished Steps: Light Blue Bg, Blue Icon, Blue Line */
+.custom-steps .ant-steps-item-finish .ant-steps-item-icon {
+    background-color: #E6F4FF !important;
+    border-color: #E6F4FF !important;
+}
+
+.custom-steps .ant-steps-item-finish .ant-steps-item-icon>.ant-steps-icon {
+    color: #1677FF !important;
+}
+
+.custom-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-tail::after {
+    background-color: #1677FF !important;
+}
+
+/* 2. Process Step (Current): Solid Blue Bg, White Text, Gray Line (default) */
+.custom-steps .ant-steps-item-process .ant-steps-item-icon {
+    background-color: #1677FF !important;
+    border-color: #1677FF !important;
+}
+
+.custom-steps .ant-steps-item-process .ant-steps-item-icon>.ant-steps-icon {
+    color: white !important;
+}
+
+.custom-steps .ant-steps-item-process>.ant-steps-item-container>.ant-steps-item-tail::after {
+    background-color: #f0f0f0 !important;
+    /* Ensure tail after current step is gray */
+}
+
+/* 3. Wait Steps (Future): Gray Bg, Gray Text */
+.custom-steps .ant-steps-item-wait .ant-steps-item-icon {
+    background-color: #f5f5f5 !important;
+    border-color: #f0f0f0 !important;
+}
+
+.custom-steps .ant-steps-item-wait .ant-steps-item-icon>.ant-steps-icon {
+    color: #000000d9 !important;
+}
+
+/* 4. Cancelled Step Special Override */
+.custom-steps .cancelled-step .ant-steps-item-icon {
+    background-color: #F6FFED !important;
+    /* Very light green/white bg */
+    border-color: #B7EB8F !important;
+    /* Light green border? Or remove border to match clean look */
+    border: none !important;
+    /* Let's assume clean look based on image */
+}
+
+/* Ensure the icon color inside cancelled step takes precedence if needed, though inline style handles it */
+.custom-steps .cancelled-step .ant-steps-item-icon>.ant-steps-icon {
+    line-height: 32px;
+    /* Center alignment */
+}

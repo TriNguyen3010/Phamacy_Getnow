@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import './styles/custom-steps.css';
+
 import Sidebar from './components/Sidebar';
 import OrdersPage from './components/OrdersPage';
 import OrderDetailPage from './components/OrderDetailPage';
@@ -189,9 +191,18 @@ export default function App() {
         else if (newStatus === 'Packing') newAction = 'Print label';
         else if (['Driver Picking Up', 'Ready to Ship', 'Out for Delivery'].includes(newStatus)) newAction = 'Check details';
 
-        setOrders(prevOrders => prevOrders.map(o =>
-            o.id === orderId ? { ...o, status: newStatus, updated: 'Just now', action: newAction } : o
-        ));
+        setOrders(prevOrders => prevOrders.map(o => {
+            if (o.id === orderId) {
+                // Clear note text if moving away from Review/New status
+                let { note, noteType } = o;
+                if (['Reviewing', 'New'].includes(o.status) && !['Reviewing', 'New'].includes(newStatus)) {
+                    note = null;
+                    noteType = null;
+                }
+                return { ...o, status: newStatus, updated: 'Just now', action: newAction, note, noteType };
+            }
+            return o;
+        }));
 
         // Trigger notification for manual updates
         const title = statusLabels[newStatus] || newStatus;

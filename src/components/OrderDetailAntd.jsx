@@ -82,12 +82,8 @@ const defaultOrderData = {
 
 
 
-const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) => {
-    const stepItems = statusText === 'Cancelled' ? [
-        { title: 'New', status: 'finish' },
-        { title: 'Review', status: 'finish' },
-        { title: 'Cancelled', status: 'finish', icon: <CheckCircleOutlined style={{ color: '#52c41a' }} /> }
-    ] : [
+const OrderHeader = ({ onBack, currentStep, orderId, createdDate, stepItems }) => {
+    const defaultSteps = [
         { title: 'New', status: currentStep > 0 ? 'finish' : 'process' },
         { title: 'Review', status: currentStep > 1 ? 'finish' : (currentStep === 1 ? 'process' : 'wait') },
         { title: 'Payment', status: currentStep > 2 ? 'finish' : (currentStep === 2 ? 'process' : 'wait') },
@@ -95,6 +91,8 @@ const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) 
         { title: 'Delivering', status: currentStep > 4 ? 'finish' : (currentStep === 4 ? 'process' : 'wait') },
         { title: 'Complete', status: currentStep === 5 ? 'finish' : 'wait' },
     ];
+
+    const items = stepItems || defaultSteps;
 
     return (
         <div className="bg-white border-b border-[#F0F0F0] px-6 py-1">
@@ -121,9 +119,9 @@ const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) 
                     <Steps
                         size="small"
                         current={currentStep}
-                        items={stepItems}
-                        labelPlacement="vertical" // Keep vertical labels but maybe we can style them smaller via CSS if needed, but standard small is okay.
-                        className="custom-steps w-full scale-90 origin-right" // Scale down the steps slightly to match the "50%" request vibe
+                        items={items}
+                        labelPlacement="vertical"
+                        className="custom-steps w-full scale-90 origin-right"
                     />
                 </Col>
             </Row>
@@ -1746,14 +1744,20 @@ const OrderCancelledLayout = ({ orderData, onBack }) => {
         </div>
     );
 
+    const cancelledSteps = [
+        { title: 'New', status: 'finish' },
+        { title: 'Review', status: 'finish' },
+        { title: 'Cancelled', status: 'finish', className: 'cancelled-step', icon: <CheckCircleOutlined style={{ color: '#52c41a' }} /> }
+    ];
+
     return (
         <div className="flex flex-col h-full bg-white">
             <OrderHeader
                 onBack={onBack}
-                currentStep={3}
+                currentStep={2} // Index 2 is Cancelled
                 orderId={orderData.id}
                 createdDate={orderData.created}
-                statusText="Cancelled"
+                stepItems={cancelledSteps}
             />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">

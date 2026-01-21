@@ -9,7 +9,22 @@ import sucralfateImg from '../assets/products/sucralfate.png';
 import gastropulgiteImg from '../assets/products/gastropulgite.png';
 import probioticsImg from '../assets/products/probiotics.png';
 
-export default function OrdersPage({ onNavigateToDetail, notificationTab, activeTab = 'All', onTabChange, lastSelectedOrder, orders = [], onDemoCheat }) {
+export default function OrdersPage({ onNavigateToDetail, notificationTab, activeTab = 'All', onTabChange, lastSelectedOrder, orders = [], onDemoCheat, savedScrollPos, onSaveScroll, hasLoaded }) {
+    const scrollContainerRef = React.useRef(null);
+
+    React.useLayoutEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = savedScrollPos || 0;
+        }
+    }, [savedScrollPos]);
+
+    const handleNavigate = (order) => {
+        if (scrollContainerRef.current && onSaveScroll) {
+            onSaveScroll(scrollContainerRef.current.scrollTop);
+        }
+        onNavigateToDetail(order);
+    };
+
     // const [activeTab, setActiveTab] = useState('All'); // Lifted to App.jsx
     const [expandedGroups, setExpandedGroups] = useState({
         'Needs action': true,
@@ -19,48 +34,34 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
     });
 
     // Cheat Code Logic
-    const [clickTracker, setClickTracker] = useState({ prescription: [], nonPrescription: [] });
+    const [clickTracker, setClickTracker] = useState({ prescription: [], nonPrescription: [], payment: [] });
 
     const handleStatsClick = (type) => {
         const now = Date.now();
         setClickTracker(prev => {
             const clicks = [...prev[type], now];
-            // Keep only clicks within last 2 seconds
             const recentClicks = clicks.filter(t => now - t < 2000);
-
-            if (recentClicks.length >= 3) {
-                if (onDemoCheat) {
-                    if (type === 'prescription') onDemoCheat('pickup');
-                    if (type === 'nonPrescription') onDemoCheat('complete');
-                }
-                return { ...prev, [type]: [] }; // Reset after trigger
-            }
             return { ...prev, [type]: recentClicks };
         });
     };
 
+    useEffect(() => {
+        Object.keys(clickTracker).forEach(type => {
+            if (clickTracker[type].length >= 3) {
+                if (onDemoCheat) {
+                    if (type === 'prescription') onDemoCheat('pickup');
+                    if (type === 'nonPrescription') onDemoCheat('complete');
+                    if (type === 'payment') onDemoCheat('payment');
+                }
+                // Reset this specific tracker immediately to prevent double trigger
+                setClickTracker(prev => ({ ...prev, [type]: [] }));
+            }
+        });
+    }, [clickTracker, onDemoCheat]);
+
     const toggleGroup = (group) => {
         setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
     };
-
-    const [highlightedId, setHighlightedId] = useState(null);
-
-    useEffect(() => {
-        if (lastSelectedOrder) {
-            setHighlightedId(lastSelectedOrder.id);
-            const timer = setTimeout(() => {
-                setHighlightedId(null);
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [lastSelectedOrder]);
-
-    const tabs = [
-        { id: 'All', label: 'All' },
-        { id: 'Queue', label: 'Queue' },
-        { id: 'In transit', label: 'In transit' },
-        { id: 'Archived', label: 'Archived' },
-    ];
 
     // Grouping Logic
     const groups = {
@@ -77,6 +78,32 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
         return 'Other';
     };
 
+    const [highlightedId, setHighlightedId] = useState(null);
+
+    useEffect(() => {
+        if (lastSelectedOrder) {
+            setHighlightedId(lastSelectedOrder.id);
+
+            // Auto-expand the group containing the order
+            const group = getGroupForOrder(lastSelectedOrder.status);
+            setExpandedGroups(prev => ({ ...prev, [group]: true }));
+
+            // Scroll Logic removed as per user request (relying on restored scroll position)
+
+            const timer = setTimeout(() => {
+                setHighlightedId(null);
+            }, 4500);
+            return () => clearTimeout(timer);
+        }
+    }, [lastSelectedOrder]);
+
+    const tabs = [
+        { id: 'All', label: 'All' },
+        { id: 'Queue', label: 'Queue' },
+        { id: 'In transit', label: 'In transit' },
+        { id: 'Archived', label: 'Archived' },
+    ];
+
     const groupedOrders = orders.reduce((acc, order) => {
         const group = getGroupForOrder(order.status);
         if (!acc[group]) acc[group] = [];
@@ -89,7 +116,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
         : [activeTab === 'Queue' ? 'Queue' : activeTab === 'In transit' ? 'In transit' : 'Archived'];
 
     return (
-        <div className="flex-1 overflow-y-auto bg-gray-50 h-screen font-inter">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-gray-50 h-screen font-inter">
             <div className="p-8 max-w-[1600px] mx-auto">
                 {/* Header Row */}
                 <div className="flex justify-between items-center mb-6">
@@ -115,16 +142,25 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-3 gap-6 mb-8">
-                    <StatsCard title="Total" value="124" trend="+3% from last month" subtext="from last month" />
+                    <StatsCard
+                        title="Total"
+                        value="124"
+                        trend="+3% from last month"
+                        subtext="from last month"
+                        onClick={() => handleStatsClick('payment')}
+                        cheatDescription="Simulate 'Payment Received'"
+                    />
                     <StatsCard
                         title="Prescription"
                         value="80"
                         onClick={() => handleStatsClick('prescription')}
+                        cheatDescription="Simulate 'Driver Pickup'"
                     />
                     <StatsCard
                         title="Non-Prescription"
                         value="44"
                         onClick={() => handleStatsClick('nonPrescription')}
+                        cheatDescription="Simulate 'Order Handover'"
                     />
                 </div>
 
@@ -206,7 +242,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                                     <AnimatePresence>
                                         {isExpanded && (
                                             <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
+                                                initial={!hasLoaded ? { height: 0, opacity: 0 } : false}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
                                                 className="space-y-3"
@@ -216,7 +252,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                                                         key={order.id}
                                                         order={order}
                                                         group={group}
-                                                        onClick={() => onNavigateToDetail(order)}
+                                                        onClick={() => handleNavigate(order)}
                                                         highlighted={highlightedId === order.id}
                                                     />
                                                 ))}

@@ -151,42 +151,15 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
     const [isPacked, setIsPacked] = useState(initialIsPacked);
 
     useEffect(() => {
-        // Only auto-advance if we are already in "Ready to Ship" mode (initialIsPacked=true)
-        // OR if the user just clicked confirm (isPacked became true from false)
-        // AND if onNext is provided.
-        if (isPacked && onNext) {
-            // If manual packing (initialIsPacked=false), we want to just set isPacked=true visually, 
-            // then maybe wait?
-            // Actually, if we are in 'Packing' status, onNext is 'Ready to Ship'.
-            // We should call onNext immediately when user clicks button? 
-            // No, user wants "Looking for Driver" visual state.
-
-            // If we are 'Packing': User clicks -> setIsPacked(true) -> "Looking for Driver".
-            // We delay calling onNext ('Ready to Ship')?
-            // Or we call onNext immediately, and 'Ready to Ship' status renders this same component with initialIsPacked=true? -> Yes.
-
-            // But if we call onNext immediately, the parent re-renders 'Ready to Ship' layout.
-            // 'Ready to Ship' layout IS THIS component with initialIsPacked=true.
-            // So visually it works.
-            // BUT, 'Ready to Ship' -> 'Driver Picking Up' needs delay.
-
-            // So:
-            // 1. If initialIsPacked=false (Packing status):
-            //    User clicks button -> setIsPacked(true).
-            //    We DO NOT auto-call onNext via timer? 
-            //    Or we do? If we do, we go to 'Ready to Ship'.
-            //    If we go to 'Ready to Ship', we render with initialIsPacked=true.
-            //    Then that runs timer -> 'Driver Picking Up'.
-
-            // So flow: Packing -> (User click) -> Ready to Ship -> (Timer) -> Driver Picking Up.
-            // That seems right.
-
+        // Only auto-advance if we transitioned from Packing -> Packed manually.
+        // If we started as Packed (initialIsPacked=true, i.e., "Ready to Ship"), DO NOT Auto-advance.
+        if (isPacked && onNext && !initialIsPacked) {
             const timer = setTimeout(() => {
                 onNext();
             }, 3000);
             return () => clearTimeout(timer);
         }
-    }, [isPacked, onNext]);
+    }, [isPacked, onNext, initialIsPacked]);
 
     // Toggle item check
     const handleItemCheck = (idx) => {
@@ -225,7 +198,7 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                     <div className="border border-[#237804] rounded-t-lg overflow-hidden">
                         <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
                             {isPacked ? <CarOutlined /> : <DropboxOutlined />}
-                            <span className="font-medium">{isPacked ? "Ready to ship out" : "Ready to pack"}</span>
+                            <span className="font-medium">{isPacked ? "Ready to ship" : "Ready to pack"}</span>
                         </div>
                         <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
                             <div className="flex justify-between items-start mb-4">
@@ -415,7 +388,7 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                     <div className="border border-[#237804] rounded-t-lg overflow-hidden">
                         <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
                             <CarOutlined />
-                            <span className="font-medium">Ready to ship out</span>
+                            <span className="font-medium">Driver assigned</span>
                         </div>
                         <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
                             {/* Headline & Reprint */}
@@ -590,7 +563,7 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                     <div className="border border-[#237804] rounded-t-lg overflow-hidden">
                         <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
                             <TruckIconSmall />
-                            <span className="font-medium">Out for delivery</span>
+                            <span className="font-medium">Out for Delivery</span>
                         </div>
                         <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
                             {/* Headline & Report */}
@@ -966,7 +939,7 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
                     <div className="border border-[#D48806] rounded-t-lg overflow-hidden">
                         <div className="bg-[#B45F06] px-4 py-2 flex items-center gap-2 text-white">
                             <WalletOutlined />
-                            <span className="font-medium">Awaiting for payment</span>
+                            <span className="font-medium">Awaiting payment</span>
                         </div>
                         <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
                             <div className="flex justify-between items-start mb-4">
@@ -1099,7 +1072,7 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
             <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
                 <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
                     <Button type="text" danger>Cancel order</Button>
-                    <Button type="primary" size="large" className="bg-blue-600" onClick={onConfirmPayment}>Confirm payment manually</Button>
+                    <Button size="large" onClick={() => { }}>Contact</Button>
                 </div>
             </div>
         </div>

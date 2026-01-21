@@ -47,6 +47,8 @@ const StatusBadge = ({ status }) => {
             case 'Reviewing': return 'Review needed';
             case 'Packing': return 'Ready to pack';
             case 'Waiting for Payment': return 'Awaiting payment';
+            case 'Driver Picking Up': return 'Driver assigned';
+            case 'Ready to Ship': return 'Ready to ship'; // or "Ready to ship out" if that's preferred, but "Ready to ship" is cleaner. Let's stick to "Ready to ship" and update Detail to match.
             default: return status;
         }
     };
@@ -125,6 +127,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
 
     return (
         <div
+            id={`order-card-${order.id}`}
             className={`bg-white border border-t border-r border-b border-gray-200 rounded-lg p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all cursor-default ${getBorderClass()}`}
             style={highlighted ? { '--highlight-rgb': getHighlightColor() } : {}}
         >

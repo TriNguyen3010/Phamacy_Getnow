@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import OrdersPage from './components/OrdersPage';
 import OrderDetailPage from './components/OrderDetailPage';
 import OrderDetailAntd from './components/OrderDetailAntd';
+import { notification } from 'antd';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -317,8 +318,22 @@ export default function App() {
     const [currentView, setCurrentView] = useState('list'); // 'list' or 'detail'
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [notificationTab, setNotificationTab] = useState(null);
+    const [homeScrollPos, setHomeScrollPos] = useState(0);
 
     const [activeTab, setActiveTab] = useState('All');
+    const statusLabels = {
+        'New': 'New Order',
+        'Reviewing': 'Reviewing',
+        'Waiting for Payment': 'Awaiting Payment',
+        'Packing': 'Ready to Pack',
+        'Ready to Ship': 'Ready to Ship',
+        'Driver Picking Up': 'Driver Assigned',
+        'Out for Delivery': 'Out for Delivery',
+        'Completed': 'Completed',
+        'Cancelled': 'Cancelled',
+        'Returned': 'Returned'
+    };
+
     const handleUpdateOrder = (orderId, newStatus) => {
         let newAction = 'Check details';
         if (['Reviewing', 'New'].includes(newStatus)) newAction = 'Review & Consult';
@@ -328,6 +343,15 @@ export default function App() {
         setOrders(prevOrders => prevOrders.map(o =>
             o.id === orderId ? { ...o, status: newStatus, updated: 'Just now', action: newAction } : o
         ));
+
+        // Trigger notification for manual updates
+        const title = statusLabels[newStatus] || newStatus;
+        notification.success({
+            message: title,
+            description: `${orderId} has been updated to ${newStatus}.`,
+            placement: 'topRight',
+            duration: 3,
+        });
     };
 
     const handleConfirm = (updatedOrder) => {
@@ -339,26 +363,81 @@ export default function App() {
     }
 
     const handleDemoCheat = (type) => {
-        console.log('Cheat triggered:', type);
+        let updatedOrder = null;
+
         setOrders(prevOrders => {
-            const newOrders = prevOrders.map(o => {
-                if (type === 'pickup' && o.status === 'Ready to Ship') {
-                    return { ...o, status: 'Driver Picking Up', updated: 'Just now', action: 'Track shipment' };
+            const newOrders = [...prevOrders];
+            const idx = newOrders.findIndex(o =>
+                (type === 'pickup' && o.status === 'Ready to Ship') ||
+                (type === 'payment' && o.status === 'Waiting for Payment') ||
+                (type === 'complete' && o.status === 'Out for Delivery')
+            );
+
+            if (idx !== -1) {
+                const o = newOrders[idx];
+                let newStatus = o.status;
+                let newAction = o.action;
+
+                if (type === 'pickup') {
+                    newStatus = 'Driver Picking Up';
+                    newAction = 'Check details';
+                } else if (type === 'payment') {
+                    newStatus = 'Packing';
+                    newAction = 'Print label';
+                } else if (type === 'complete') {
+                    newStatus = 'Completed';
+                    newAction = 'Check details';
                 }
-                if (type === 'complete' && o.status === 'Out for Delivery') {
-                    return { ...o, status: 'Completed', updated: 'Just now', action: 'Check details' };
-                }
-                return o;
-            });
+
+                updatedOrder = { ...o, status: newStatus, updated: 'Just now', action: newAction };
+                newOrders[idx] = updatedOrder;
+            }
             return newOrders;
         });
 
-        // Notification feedback
-        if (type === 'pickup') setNotificationTab('In transit');
-        if (type === 'complete') setNotificationTab('Archived');
+        // Notification feedback with ID
+        setTimeout(() => { // Slight delay to ensure state update logic is processed
+            if (updatedOrder) {
+                const title = statusLabels[updatedOrder.status] || updatedOrder.status;
+
+                if (type === 'pickup') {
+                    setNotificationTab('In transit');
+                    notification.info({
+                        message: title,
+                        description: `${updatedOrder.id} has been assigned to driver.`,
+                        placement: 'topRight',
+                        duration: 4,
+                    });
+                }
+                if (type === 'payment') {
+                    setNotificationTab('Queue');
+                    notification.success({
+                        message: title,
+                        description: `${updatedOrder.id} is now Packing.`,
+                        placement: 'topRight',
+                        duration: 4,
+                    });
+                }
+                if (type === 'complete') {
+                    setNotificationTab('Archived');
+                    notification.success({
+                        message: title,
+                        description: `${updatedOrder.id} has been successfully delivered.`,
+                        placement: 'topRight',
+                        duration: 4,
+                    });
+                }
+            }
+        }, 50);
     };
 
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
+
+    // Set hasLoaded to true after first render
+    React.useEffect(() => {
+        setHasLoaded(true);
+    }, []);
 
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB]">
@@ -368,7 +447,7 @@ export default function App() {
                     {currentView === 'list' ? (
                         <motion.div
                             key="list"
-                            initial={{ opacity: 0, x: -20 }}
+                            initial={!hasLoaded ? { opacity: 0, x: -20 } : false}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.15 }}
@@ -382,6 +461,9 @@ export default function App() {
                                 onTabChange={setActiveTab}
                                 lastSelectedOrder={selectedOrder}
                                 onDemoCheat={handleDemoCheat}
+                                savedScrollPos={homeScrollPos}
+                                onSaveScroll={setHomeScrollPos}
+                                hasLoaded={hasLoaded}
                             />
                         </motion.div>
                     ) : (

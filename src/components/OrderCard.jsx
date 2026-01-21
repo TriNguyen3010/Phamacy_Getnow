@@ -155,49 +155,36 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
 
                     <div className="mb-2">
                         <span className="text-xs font-semibold text-gray-500 block mb-1">Prescription</span>
-                        <button
-                            onClick={toggleExpand}
-                            className="text-blue-600 text-xs font-medium flex items-center gap-1 hover:underline focus:outline-none"
-                        >
+                        <div className="text-blue-600 text-xs font-medium flex items-center gap-1">
                             {order.itemsCount} item(s)
-                            {expanded ? <ChevronDown size={14} className="rotate-180" /> : <ChevronDown size={14} />}
-                        </button>
+                        </div>
                     </div>
 
                     <div className="space-y-3 mt-3">
-                        {expanded ? (
-                            order.items.map((itm, idx) => (
-                                <div key={idx} className="flex gap-3 items-start">
-                                    <div className="w-10 h-10 bg-gray-50 rounded border border-gray-200 flex items-center justify-center p-0.5 flex-shrink-0">
-                                        <img src={itm.image} alt={itm.name} className="w-full h-full object-contain" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="font-medium text-sm text-gray-900">{itm.name}</span>
-                                            <span className="text-xs text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">{itm.unit}</span>
-                                        </div>
-                                        <div className="text-xs text-gray-500 mt-0.5">x {itm.qty}</div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            // Collapsed: Show first item only
-                            <div className="flex gap-3 items-start">
+                        {order.items.slice(0, 3).map((itm, idx) => (
+                            <div key={idx} className="flex gap-3 items-start">
                                 <div className="w-10 h-10 bg-gray-50 rounded border border-gray-200 flex items-center justify-center p-0.5 flex-shrink-0">
-                                    <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                    <img src={itm.image} alt={itm.name} className="w-full h-full object-contain" />
                                 </div>
                                 <div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="font-medium text-sm text-gray-900">{item.name}</span>
-                                        <span className="text-xs text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">{item.unit}</span>
+                                        <span className="font-medium text-sm text-gray-900">{itm.name}</span>
+                                        <span className="text-xs text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">{itm.unit}</span>
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-0.5">x {item.qty}</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">x {itm.qty}</div>
                                 </div>
                             </div>
+                        ))}
+
+                        {order.items.length > 3 && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onClick(); }}
+                                className="text-xs font-medium text-gray-500 hover:text-blue-600 hover:bg-gray-50 px-2 py-1 rounded transition-colors w-full text-left"
+                            >
+                                + {order.items.length - 3} more items...
+                            </button>
                         )}
                     </div>
-
-
                 </div>
 
                 {/* 2. Total */}
@@ -223,10 +210,21 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
 
                 {/* 4. System Notes */}
                 <div className="flex items-center h-full px-2">
-                    <span className={`text-xs ${getNoteStyle()}`}>
-                        {order.noteType === 'warning' && <AlertTriangle size={14} />}
-                        {order.note}
-                    </span>
+                    {order.items.some(i => i.warning) ? (
+                        <div className="flex flex-col gap-1">
+                            {order.items.filter(i => i.warning).map((i, idx) => (
+                                <span key={idx} className="text-xs text-red-600 font-medium flex items-center gap-1.5">
+                                    <AlertTriangle size={14} />
+                                    {i.name}: {i.warning}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className={`text-xs ${getNoteStyle()}`}>
+                            {order.noteType === 'warning' && order.note && <AlertTriangle size={14} />}
+                            {order.note}
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex flex-col items-end justify-between h-full pt-1 pb-1">

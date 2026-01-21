@@ -93,3 +93,14 @@ body {
   animation: highlight-pulse-3 1s ease-in-out 1 forwards;
   /* 1 time, then stop at 100% keyframe */
 }
+
+/* Hide number input arrows */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}

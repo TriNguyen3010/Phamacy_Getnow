@@ -28,7 +28,8 @@ import {
     StarFilled,
     EnvironmentOutlined, // Driver Picking Up
     WarningOutlined,
-    BulbOutlined
+    BulbOutlined,
+    CopyOutlined
 } from '@ant-design/icons';
 import {
     Layout,
@@ -44,7 +45,8 @@ import {
     Checkbox,
     Input,
     Collapse,
-    Select
+    Select,
+    Popconfirm
 } from 'antd';
 import { ChevronRight } from 'lucide-react';
 
@@ -78,25 +80,7 @@ const defaultOrderData = {
 
 // --- Sub Components ---
 
-const GlobalHeader = () => (
-    <div className="h-16 bg-white border-b border-[#F0F0F0] flex items-center justify-end px-6 gap-4 shrink-0">
-        <Button
-            shape="circle"
-            icon={<span role="img" aria-label="mail" className="anticon anticon-mail"><svg viewBox="64 64 896 896" focusable="false" data-icon="mail" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 110.8V792H136V270.8l-27.6-21.5 39.3-50.6 42.8 33.3L643.1 484 912 240l22.9 39.4-38.9 31.4z"></path></svg></span>}
-            className="border-gray-200"
-        />
-        <Button
-            shape="circle"
-            icon={
-                <div className="relative flex items-center justify-center">
-                    <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                    <span role="img" aria-label="bell" className="anticon anticon-bell"><svg viewBox="64 64 896 896" focusable="false" data-icon="bell" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M816 768h-24V428c0-141.1-104.3-257.8-240-277.2V112c0-22.1-17.9-40-40-40s-40 17.9-40 40v38.8C336.3 170.2 232 286.9 232 428v340h-24c-17.7 0-32 14.3-32 32v16h736v-16c0-17.7-14.3-32-32-32zm-426-88h244V428c0-54.8-19.1-104.7-51.2-143.2a15.2 15.2 0 00-6.8-6.4C554.9 271.6 532.7 268 512 268c-20.7 0-42.9 3.6-62 10.4-3.5 1.2-6.5 3.5-8.8 6.4C408.9 323.3 390 373.2 390 428v252zM512 944c53 0 96-43 96-96h-192c0 53 43 96 96 96z"></path></svg></span>
-                </div>
-            }
-            className="border-gray-200"
-        />
-    </div>
-);
+
 
 const OrderHeader = ({ onBack, currentStep, orderId, createdDate, statusText }) => {
     const stepItems = [
@@ -181,8 +165,8 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
     );
 
     return (
-        <div className="flex flex-col h-screen bg-white">
-            <GlobalHeader />
+        <div className="flex flex-col h-full bg-white">
+
             <OrderHeader
                 onBack={onBack}
                 currentStep={3} // Packing Step Active (0-index base? 
@@ -191,145 +175,152 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 overflow-y-auto bg-white p-8">
-                <div className="max-w-4xl mx-auto space-y-6">
-
-                    {/* Ready to Pack Banner */}
-                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
-                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
-                            {isPacked ? <CarOutlined /> : <DropboxOutlined />}
-                            <span className="font-medium">{isPacked ? "Ready to ship" : "Ready to pack"}</span>
-                        </div>
-                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
-                                    <CheckCircleOutlined className="text-2xl text-[#13854e]" />
-                                    <div>
-                                        <Title level={4} style={{ margin: 0 }}>
-                                            {isPacked ? "We’ll assign a driver to pick up your order..." : "Payment confirmed. Safe to dispense."}
-                                        </Title>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-2 items-end">
-                                    <Button icon={<PrinterOutlined />}>Print Shipping Label</Button>
-                                    <Button>Preview Shipping Label</Button>
-                                </div>
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Ready to Pack Banner - Fixed */}
+                <div className="z-20 shrink-0 px-8 pt-0 bg-white">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                            <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                                {isPacked ? <CarOutlined /> : <DropboxOutlined />}
+                                <span className="font-medium">{isPacked ? "Ready to ship" : "Ready to pack"}</span>
                             </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-4">
-                                <div>
-                                    <span className="text-gray-500 text-xs block">Shipping method</span>
-                                    <div className="flex items-center gap-1 font-medium text-gray-900">
-                                        <TruckIconSmall />
-                                        Standard - Receive within 24hrs
+                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <CheckCircleOutlined className="text-2xl text-[#13854e]" />
+                                        <div>
+                                            <Title level={4} style={{ margin: 0 }}>
+                                                {isPacked ? "We’ll assign a driver to pick up your order..." : "Payment confirmed. Safe to dispense."}
+                                            </Title>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2 items-end">
+                                        <Button icon={<PrinterOutlined />}>Print Shipping Label</Button>
+                                        <Button>Preview Shipping Label</Button>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-gray-500 text-xs block">Delivery deadline</span>
-                                    <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-4">
+                                    <div>
+                                        <span className="text-gray-500 text-xs block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                            <TruckIconSmall />
+                                            Standard - Receive within 24hrs
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Delivery deadline</span>
+                                        <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Collapsible Sections */}
-                    <Collapse
-                        defaultActiveKey={defaultActiveKey}
-                        expandIconPosition="end"
-                        ghost
-                        className="site-collapse-custom-collapse"
-                    >
-                        {/* Customer Details */}
-                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
-                            <div className="pl-0 pb-2">
-                                <CustomerInfoSimple customer={orderData.customer} />
-                            </div>
-                        </Panel>
-
-                        {/* Prescription (Packing Checklist) */}
-                        <Panel
-                            header={
-                                <div className="flex justify-between items-center w-full pr-4">
-                                    <Text strong className="text-sm">Prescription</Text>
-                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
-                                </div>
-                            }
-                            key="2"
-                            className="border-b border-gray-100 py-2"
-                        >
-                            <div className="pl-0">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
-                                        <span className="text-sm font-medium">Stomachache</span>
-                                    </div>
-                                    <Button size="small">View uploaded prescription</Button>
-                                </div>
-                                <div className="mb-2">
-                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
-                                    <div className="space-y-3">
-                                        {orderData.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
-                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
-                                                    </div>
-                                                    <div>
-                                                        <Text strong className="block text-sm">{item.name}</Text>
-                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-8">
-                                                    <div className="text-right">
-                                                        <Text type="secondary" className="text-xs block">Price</Text>
-                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
-                                                    </div>
-                                                    <Checkbox
-                                                        checked={!!checkedItems[idx]}
-                                                        onChange={() => handleItemCheck(idx)}
-                                                        className="scale-125"
-                                                        disabled={isPacked}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </Panel>
-
-                        {/* Payment Details */}
-                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
-                            <div className="space-y-2 pl-0">
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Total order</Text>
-                                    <Text strong>791,800₫</Text>
-                                </div>
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Shipping fee</Text>
-                                    <Text strong>0₫</Text>
-                                </div>
-                                <div className="flex justify-between items-end pt-2">
-                                    <Text strong>Total payment</Text>
-                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
-                                </div>
-                            </div>
-                        </Panel>
-                    </Collapse>
                 </div>
-            </div>
 
-            {/* Footer */}
-            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
-                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
-                    <Button
-                        type="primary"
-                        size="large"
-                        disabled={!allChecked || isPacked}
-                        onClick={isPacked ? null : () => setIsPacked(true)}
-                        className={allChecked && !isPacked ? "bg-blue-600" : (isPacked ? "bg-gray-400 border-gray-400" : "")}
-                    >
-                        {isPacked ? "Looking for Driver" : "Confirm Packed & Ready to Ship"}
-                    </Button>
+                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-6">
+                    <div className="max-w-4xl mx-auto space-y-6">
+
+
+                        {/* Collapsible Sections */}
+                        <Collapse
+                            defaultActiveKey={defaultActiveKey}
+                            expandIconPosition="end"
+                            ghost
+                            className="site-collapse-custom-collapse"
+                        >
+                            {/* Customer Details */}
+                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                                <div className="pl-0 pb-2">
+                                    <CustomerInfoSimple customer={orderData.customer} />
+                                </div>
+                            </Panel>
+
+                            {/* Prescription (Packing Checklist) */}
+                            <Panel
+                                header={
+                                    <div className="flex justify-between items-center w-full pr-4">
+                                        <Text strong className="text-sm">Prescription</Text>
+                                        <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                    </div>
+                                }
+                                key="2"
+                                className="border-b border-gray-100 py-2"
+                            >
+                                <div className="pl-0">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                            <span className="text-sm font-medium">Stomachache</span>
+                                        </div>
+                                        <Button size="small">View uploaded prescription</Button>
+                                    </div>
+                                    <div className="mb-2">
+                                        <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                        <div className="space-y-3">
+                                            {orderData.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                            <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                        </div>
+                                                        <div>
+                                                            <Text strong className="block text-sm">{item.name}</Text>
+                                                            <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-8">
+                                                        <div className="text-right">
+                                                            <Text type="secondary" className="text-xs block">Price</Text>
+                                                            <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                        </div>
+                                                        <Checkbox
+                                                            checked={!!checkedItems[idx]}
+                                                            onChange={() => handleItemCheck(idx)}
+                                                            className="scale-125"
+                                                            disabled={isPacked}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Panel>
+
+                            {/* Payment Details */}
+                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                                <div className="space-y-2 pl-0">
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Total order</Text>
+                                        <Text strong>791,800₫</Text>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Shipping fee</Text>
+                                        <Text strong>0₫</Text>
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2">
+                                        <Text strong>Total payment</Text>
+                                        <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                </div>
+                            </Panel>
+                        </Collapse>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                    <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                        <Button
+                            type="primary"
+                            size="large"
+                            disabled={!allChecked || isPacked}
+                            onClick={isPacked ? null : () => setIsPacked(true)}
+                            className={allChecked && !isPacked ? "bg-blue-600" : (isPacked ? "bg-gray-400 border-gray-400" : "")}
+                        >
+                            {isPacked ? "Looking for Driver" : "Confirm Packed & Ready to Ship"}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -337,9 +328,15 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
 };
 
 // Helper for Truck Icon
+// Helper for Truck Icon
 const TruckIconSmall = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-)
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="3" width="15" height="13"></rect>
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+    </svg>
+);
 
 // Helper Component for shared customer info used in collapse
 const CustomerInfoSimple = ({ customer }) => (
@@ -357,7 +354,7 @@ const CustomerInfoSimple = ({ customer }) => (
             <Text strong>{customer.address}</Text>
         </div>
     </div>
-)
+);
 
 // --- Driver Assigned Layout (Ready to Ship) ---
 const DriverAssignedLayout = ({ orderData, onBack }) => {
@@ -372,8 +369,8 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
     );
 
     return (
-        <div className="flex flex-col h-screen bg-white">
-            <GlobalHeader />
+        <div className="flex flex-col h-full bg-white">
+
             <OrderHeader
                 onBack={onBack}
                 currentStep={4} // Delivering Step Active
@@ -381,153 +378,159 @@ const DriverAssignedLayout = ({ orderData, onBack }) => {
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 overflow-y-auto bg-white p-8">
-                <div className="max-w-4xl mx-auto space-y-6">
-
-                    {/* Driver Assigned Banner */}
-                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
-                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
-                            <CarOutlined />
-                            <span className="font-medium">Driver assigned</span>
-                        </div>
-                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
-                            {/* Headline & Reprint */}
-                            <div className="flex justify-between items-start mb-6">
-                                <Title level={4} style={{ margin: 0 }}>Driver Assigned: Tai Pham is arriving.</Title>
-                                <Button icon={<PrinterOutlined />}>Reprint Shipping Label</Button>
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Driver Assigned Banner - Fixed */}
+                <div className="z-20 shrink-0 px-8 pt-0 bg-white">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                            <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                                <CarOutlined />
+                                <span className="font-medium">Driver assigned</span>
                             </div>
+                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                {/* Headline & Reprint */}
+                                <div className="flex justify-between items-start mb-6">
+                                    <Title level={4} style={{ margin: 0 }}>Driver Assigned: Tai Pham is arriving.</Title>
+                                    <Button icon={<PrinterOutlined />}>Reprint Shipping Label</Button>
+                                </div>
 
-                            {/* Driver Info Grid */}
-                            <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
-                                {/* Avatar */}
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                                    {/* Mock Avatar */}
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
-                                </div>
-                                {/* Name */}
-                                <div>
-                                    <Text type="secondary" className="block text-xs">Driver's name</Text>
-                                    <Text strong>Tai Pham</Text>
-                                </div>
-                                {/* Phone */}
-                                <div>
-                                    <Text type="secondary" className="block text-xs">Phone number</Text>
-                                    <Text strong>078 389 270</Text>
-                                </div>
-                                {/* License */}
-                                <div>
-                                    <Text type="secondary" className="block text-xs">License plate</Text>
-                                    <Text strong>59-X1 123.45</Text>
-                                </div>
-                                {/* Location Button */}
-                                <div>
-                                    <Button icon={<ExportOutlined />}>View location</Button>
-                                </div>
-                            </div>
-
-                            {/* Shipping Details */}
-                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                                <div>
-                                    <span className="text-gray-500 text-xs block">Shipping method</span>
-                                    <div className="flex items-center gap-1 font-medium text-gray-900">
-                                        <TruckIconSmall />
-                                        Standard - Receive within 24hrs
+                                {/* Driver Info Grid */}
+                                <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
+                                    {/* Avatar */}
+                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                        {/* Mock Avatar */}
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                    </div>
+                                    {/* Name */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">Driver's name</Text>
+                                        <Text strong>Tai Pham</Text>
+                                    </div>
+                                    {/* Phone */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">Phone number</Text>
+                                        <Text strong>078 389 270</Text>
+                                    </div>
+                                    {/* License */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">License plate</Text>
+                                        <Text strong>59-X1 123.45</Text>
+                                    </div>
+                                    {/* Location Button */}
+                                    <div>
+                                        <Button icon={<ExportOutlined />}>View location</Button>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-gray-500 text-xs block">Delivery deadline</span>
-                                    <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+
+                                {/* Shipping Details */}
+                                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                    <div>
+                                        <span className="text-gray-500 text-xs block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                            <TruckIconSmall />
+                                            Standard - Receive within 24hrs
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Delivery deadline</span>
+                                        <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Collapsible Sections */}
-                    <Collapse
-                        defaultActiveKey={defaultActiveKey}
-                        expandIconPosition="end"
-                        ghost
-                        className="site-collapse-custom-collapse"
-                    >
-                        {/* Customer Details */}
-                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
-                            <div className="pl-0 pb-2">
-                                <CustomerInfoSimple customer={orderData.customer} />
-                            </div>
-                        </Panel>
-
-                        {/* Prescription (Read Only) */}
-                        <Panel
-                            header={
-                                <div className="flex justify-between items-center w-full pr-4">
-                                    <Text strong className="text-sm">Prescription</Text>
-                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
-                                </div>
-                            }
-                            key="2"
-                            className="border-b border-gray-100 py-2"
-                        >
-                            <div className="pl-0">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
-                                        <span className="text-sm font-medium">Stomachache</span>
-                                    </div>
-                                    <Button size="small">View uploaded prescription</Button>
-                                </div>
-                                <div className="mb-2">
-                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
-                                    <div className="space-y-3">
-                                        {orderData.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
-                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
-                                                    </div>
-                                                    <div>
-                                                        <Text strong className="block text-sm">{item.name}</Text>
-                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <Text type="secondary" className="text-xs block">Price</Text>
-                                                    <Text strong>{item.price.toLocaleString()}đ</Text>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </Panel>
-
-                        {/* Payment Details */}
-                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
-                            <div className="space-y-2 pl-0">
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Total order</Text>
-                                    <Text strong>791,800₫</Text>
-                                </div>
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Shipping fee</Text>
-                                    <Text strong>0₫</Text>
-                                </div>
-                                <div className="flex justify-between items-end pt-2">
-                                    <Text strong>Total payment</Text>
-                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
-                                </div>
-                            </div>
-                        </Panel>
-                    </Collapse>
                 </div>
-            </div>
 
-            {/* Footer */}
-            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
-                <div className="max-w-4xl mx-auto flex flex-col items-end gap-2">
-                    <Text type="secondary" style={{ fontSize: '12px' }}>Drivers usually scan, use this only if scanning fails</Text>
-                    <Button size="large">
-                        Contact Support
-                    </Button>
+                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-6">
+                    <div className="max-w-4xl mx-auto space-y-6">
+
+                        {/* Collapsible Sections */}
+                        <Collapse
+                            defaultActiveKey={defaultActiveKey}
+                            expandIconPosition="end"
+                            ghost
+                            className="site-collapse-custom-collapse"
+                        >
+                            {/* Customer Details */}
+                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                                <div className="pl-0 pb-2">
+                                    <CustomerInfoSimple customer={orderData.customer} />
+                                </div>
+                            </Panel>
+
+                            {/* Prescription (Read Only) */}
+                            <Panel
+                                header={
+                                    <div className="flex justify-between items-center w-full pr-4">
+                                        <Text strong className="text-sm">Prescription</Text>
+                                        <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                    </div>
+                                }
+                                key="2"
+                                className="border-b border-gray-100 py-2"
+                            >
+                                <div className="pl-0">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                            <span className="text-sm font-medium">Stomachache</span>
+                                        </div>
+                                        <Button size="small">View uploaded prescription</Button>
+                                    </div>
+                                    <div className="mb-2">
+                                        <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                        <div className="space-y-3">
+                                            {orderData.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                            <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                        </div>
+                                                        <div>
+                                                            <Text strong className="block text-sm">{item.name}</Text>
+                                                            <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <Text type="secondary" className="text-xs block">Price</Text>
+                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Panel>
+
+                            {/* Payment Details */}
+                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                                <div className="space-y-2 pl-0">
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Total order</Text>
+                                        <Text strong>791,800₫</Text>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Shipping fee</Text>
+                                        <Text strong>0₫</Text>
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2">
+                                        <Text strong>Total payment</Text>
+                                        <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                </div>
+                            </Panel>
+                        </Collapse>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                    <div className="max-w-4xl mx-auto flex flex-col items-end gap-2">
+                        <Text type="secondary" style={{ fontSize: '12px' }}>Drivers usually scan, use this only if scanning fails</Text>
+                        <Button size="large">
+                            Contact Support
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -547,8 +550,8 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
     );
 
     return (
-        <div className="flex flex-col h-screen bg-white">
-            <GlobalHeader />
+        <div className="flex flex-col h-full bg-white">
+
             <OrderHeader
                 onBack={onBack}
                 currentStep={4} // Delivering is Step 4 (or 5? Stepper: New, Review, Payment, Packing, Delivering, Complete. 0,1,2,3,4,5. So 4 is correct.)
@@ -556,156 +559,162 @@ const OutForDeliveryLayout = ({ orderData, onBack }) => {
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 overflow-y-auto bg-white p-8">
-                <div className="max-w-4xl mx-auto space-y-6">
-
-                    {/* Out for Delivery Banner */}
-                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
-                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
-                            <TruckIconSmall />
-                            <span className="font-medium">Out for Delivery</span>
-                        </div>
-                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
-                            {/* Headline & Report */}
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                    <Title level={4} style={{ margin: 0 }}>Your order is on the way to deliver.</Title>
-                                    <Text type="secondary" className="text-xs">Estimated arrival time: Today, before 7:00 PM</Text>
-                                </div>
-                                <Button>Report delivery issue</Button>
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Out for Delivery Banner - Fixed */}
+                <div className="z-20 shrink-0 px-8 pt-0 bg-white">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                            <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                                <TruckIconSmall />
+                                <span className="font-medium">Out for Delivery</span>
                             </div>
+                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                {/* Headline & Report */}
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <Title level={4} style={{ margin: 0 }}>Your order is on the way to deliver.</Title>
+                                        <Text type="secondary" className="text-xs">Estimated arrival time: Today, before 7:00 PM</Text>
+                                    </div>
+                                    <Button>Report delivery issue</Button>
+                                </div>
 
-                            <Divider dashed style={{ margin: '16px 0' }} />
+                                <Divider dashed style={{ margin: '16px 0' }} />
 
-                            {/* Driver Info Grid */}
-                            <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
-                                {/* Avatar */}
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
-                                </div>
-                                {/* Name */}
-                                <div>
-                                    <Text type="secondary" className="block text-xs">Driver's name</Text>
-                                    <Text strong>Tai Pham</Text>
-                                </div>
-                                {/* Phone */}
-                                <div>
-                                    <Text type="secondary" className="block text-xs">Phone number</Text>
-                                    <Text strong>078 389 270</Text>
-                                </div>
-                                {/* License */}
-                                <div>
-                                    <Text type="secondary" className="block text-xs">License plate</Text>
-                                    <Text strong>59-X1 123.45</Text>
-                                </div>
-                                {/* Track Button */}
-                                <div>
-                                    <Button icon={<ExportOutlined />}>Track shipment</Button>
-                                </div>
-                            </div>
-
-                            {/* Shipping Details */}
-                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                                <div>
-                                    <span className="text-gray-500 text-xs block">Shipping method</span>
-                                    <div className="flex items-center gap-1 font-medium text-gray-900">
-                                        <TruckIconSmall />
-                                        Standard - Receive within 24hrs
+                                {/* Driver Info Grid */}
+                                <div className="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-6 items-center mb-6">
+                                    {/* Avatar */}
+                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                    </div>
+                                    {/* Name */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">Driver's name</Text>
+                                        <Text strong>Tai Pham</Text>
+                                    </div>
+                                    {/* Phone */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">Phone number</Text>
+                                        <Text strong>078 389 270</Text>
+                                    </div>
+                                    {/* License */}
+                                    <div>
+                                        <Text type="secondary" className="block text-xs">License plate</Text>
+                                        <Text strong>59-X1 123.45</Text>
+                                    </div>
+                                    {/* Track Button */}
+                                    <div>
+                                        <Button icon={<ExportOutlined />}>Track shipment</Button>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-gray-500 text-xs block">Delivery deadline</span>
-                                    <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+
+                                {/* Shipping Details */}
+                                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                    <div>
+                                        <span className="text-gray-500 text-xs block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                            <TruckIconSmall />
+                                            Standard - Receive within 24hrs
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Delivery deadline</span>
+                                        <span className="font-bold text-gray-900">12:51 PM tomorrow</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Collapsible Sections */}
-                    <Collapse
-                        defaultActiveKey={defaultActiveKey}
-                        expandIconPosition="end"
-                        ghost
-                        className="site-collapse-custom-collapse"
-                    >
-                        {/* Customer Details */}
-                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
-                            <div className="pl-0 pb-2">
-                                <CustomerInfoSimple customer={orderData.customer} />
-                            </div>
-                        </Panel>
-
-                        {/* Prescription (Read Only) */}
-                        <Panel
-                            header={
-                                <div className="flex justify-between items-center w-full pr-4">
-                                    <Text strong className="text-sm">Prescription</Text>
-                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
-                                </div>
-                            }
-                            key="2"
-                            className="border-b border-gray-100 py-2"
-                        >
-                            <div className="pl-0">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
-                                        <span className="text-sm font-medium">Stomachache</span>
-                                    </div>
-                                    <Button size="small">View uploaded prescription</Button>
-                                </div>
-                                <div className="mb-2">
-                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
-                                    <div className="space-y-3">
-                                        {orderData.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
-                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
-                                                    </div>
-                                                    <div>
-                                                        <Text strong className="block text-sm">{item.name}</Text>
-                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <Text type="secondary" className="text-xs block">Price</Text>
-                                                    <Text strong>{item.price.toLocaleString()}đ</Text>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </Panel>
-
-                        {/* Payment Details */}
-                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
-                            <div className="space-y-2 pl-0">
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Total order</Text>
-                                    <Text strong>791,800₫</Text>
-                                </div>
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Shipping fee</Text>
-                                    <Text strong>0₫</Text>
-                                </div>
-                                <div className="flex justify-between items-end pt-2">
-                                    <Text strong>Total payment</Text>
-                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
-                                </div>
-                            </div>
-                        </Panel>
-                    </Collapse>
                 </div>
-            </div>
 
-            {/* Footer */}
-            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
-                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
-                    <Button size="large">
-                        Contact Support
-                    </Button>
+                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-6">
+                    <div className="max-w-4xl mx-auto space-y-6">
+
+                        {/* Collapsible Sections */}
+                        <Collapse
+                            defaultActiveKey={defaultActiveKey}
+                            expandIconPosition="end"
+                            ghost
+                            className="site-collapse-custom-collapse"
+                        >
+                            {/* Customer Details */}
+                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                                <div className="pl-0 pb-2">
+                                    <CustomerInfoSimple customer={orderData.customer} />
+                                </div>
+                            </Panel>
+
+                            {/* Prescription (Read Only) */}
+                            <Panel
+                                header={
+                                    <div className="flex justify-between items-center w-full pr-4">
+                                        <Text strong className="text-sm">Prescription</Text>
+                                        <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                    </div>
+                                }
+                                key="2"
+                                className="border-b border-gray-100 py-2"
+                            >
+                                <div className="pl-0">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                            <span className="text-sm font-medium">Stomachache</span>
+                                        </div>
+                                        <Button size="small">View uploaded prescription</Button>
+                                    </div>
+                                    <div className="mb-2">
+                                        <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                        <div className="space-y-3">
+                                            {orderData.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                            <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                        </div>
+                                                        <div>
+                                                            <Text strong className="block text-sm">{item.name}</Text>
+                                                            <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <Text type="secondary" className="text-xs block">Price</Text>
+                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Panel>
+
+                            {/* Payment Details */}
+                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                                <div className="space-y-2 pl-0">
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Total order</Text>
+                                        <Text strong>791,800₫</Text>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Shipping fee</Text>
+                                        <Text strong>0₫</Text>
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2">
+                                        <Text strong>Total payment</Text>
+                                        <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                </div>
+                            </Panel>
+                        </Collapse>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                    <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                        <Button size="large">
+                            Contact Support
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -726,8 +735,8 @@ const CompletedLayout = ({ orderData, onBack }) => {
     );
 
     return (
-        <div className="flex flex-col h-screen bg-white">
-            <GlobalHeader />
+        <div className="flex flex-col h-full bg-white">
+
             <OrderHeader
                 onBack={onBack}
                 currentStep={5} // Complete Step Active
@@ -735,175 +744,181 @@ const CompletedLayout = ({ orderData, onBack }) => {
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 overflow-y-auto bg-white p-8">
-                <div className="max-w-4xl mx-auto space-y-6">
-
-                    {/* Order Complete Banner */}
-                    <div className="border border-[#237804] rounded-t-lg overflow-hidden">
-                        <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
-                            <CheckCircleOutlined />
-                            <span className="font-medium">Order complete</span>
-                        </div>
-                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
-                            {/* Headline & Print */}
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                    <Title level={4} style={{ margin: 0 }}>Order was successfully delivered.</Title>
-                                    <Text type="secondary" className="text-xs">Delivered on: 2026-01-15, 17:18:15 PM</Text>
-                                </div>
-                                <Button icon={<PrinterOutlined />}>Print invoice</Button>
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Order Complete Banner - Fixed */}
+                <div className="z-20 shrink-0 px-8 pt-0 bg-white">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="border border-[#237804] rounded-t-lg overflow-hidden">
+                            <div className="bg-[#13854e] px-4 py-2 flex items-center gap-2 text-white">
+                                <CheckCircleOutlined />
+                                <span className="font-medium">Order complete</span>
                             </div>
+                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                {/* Headline & Print */}
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <Title level={4} style={{ margin: 0 }}>Order was successfully delivered.</Title>
+                                        <Text type="secondary" className="text-xs">Delivered on: 2026-01-15, 17:18:15 PM</Text>
+                                    </div>
+                                    <Button icon={<PrinterOutlined />}>Print invoice</Button>
+                                </div>
 
-                            <Divider dashed style={{ margin: '16px 0' }} />
+                                <Divider dashed style={{ margin: '16px 0' }} />
 
-                            {/* Driver Info Row */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-6">
-                                    {/* Avatar */}
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                {/* Driver Info Row */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-6">
+                                        {/* Avatar */}
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TaiPham" alt="Driver" />
+                                            </div>
+                                            <div>
+                                                <Text type="secondary" className="block text-xs">Driver's name</Text>
+                                                <Text strong>Tai Pham</Text>
+                                            </div>
                                         </div>
+                                        {/* Phone */}
                                         <div>
-                                            <Text type="secondary" className="block text-xs">Driver's name</Text>
-                                            <Text strong>Tai Pham</Text>
+                                            <Text type="secondary" className="block text-xs">Phone number</Text>
+                                            <Text strong>078 389 270</Text>
+                                        </div>
+                                        {/* License */}
+                                        <div>
+                                            <Text type="secondary" className="block text-xs">License plate</Text>
+                                            <Text strong>59-X1 123.45</Text>
                                         </div>
                                     </div>
-                                    {/* Phone */}
-                                    <div>
-                                        <Text type="secondary" className="block text-xs">Phone number</Text>
-                                        <Text strong>078 389 270</Text>
-                                    </div>
-                                    {/* License */}
-                                    <div>
-                                        <Text type="secondary" className="block text-xs">License plate</Text>
-                                        <Text strong>59-X1 123.45</Text>
-                                    </div>
+                                    {/* Track Button */}
+                                    <Button icon={<ExportOutlined />}>Track shipment</Button>
                                 </div>
-                                {/* Track Button */}
-                                <Button icon={<ExportOutlined />}>Track shipment</Button>
-                            </div>
 
-                            {/* Rating Section */}
-                            <div className="mb-6">
-                                <Text type="secondary" className="block text-xs mb-1">Rating the pickup speed/attitude</Text>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex gap-1 text-2xl cursor-pointer">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <span key={star} onClick={() => setRating(star)} className="text-[#4F46E5] hover:scale-110 transition-transform">
-                                                {star <= rating ? <StarFilled /> : <StarOutlined />}
-                                            </span>
-                                        ))}
+                                {/* Rating Section */}
+                                <div className="mb-6">
+                                    <Text type="secondary" className="block text-xs mb-1">Rating the pickup speed/attitude</Text>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex gap-1 text-2xl cursor-pointer">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <span key={star} onClick={() => setRating(star)} className="text-[#4F46E5] hover:scale-110 transition-transform">
+                                                    {star <= rating ? <StarFilled /> : <StarOutlined />}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <Button type="primary" size="small" className="bg-blue-600">Submit</Button>
                                     </div>
-                                    <Button type="primary" size="small" className="bg-blue-600">Submit</Button>
                                 </div>
-                            </div>
 
-                            {/* Shipping Details */}
-                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                                <div>
-                                    <span className="text-gray-500 text-xs block">Shipping method</span>
-                                    <div className="flex items-center gap-1 font-medium text-gray-900">
-                                        <TruckIconSmall />
-                                        Standard - Receive within 24hrs
+                                {/* Shipping Details */}
+                                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                    <div>
+                                        <span className="text-gray-500 text-xs block">Shipping method</span>
+                                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                                            <TruckIconSmall />
+                                            Standard - Receive within 24hrs
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-gray-500 text-xs block">Delivered on</span>
-                                    <span className="font-bold text-gray-900">2026-01-15, 17:18:15 PM</span>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Delivered on</span>
+                                        <span className="font-bold text-gray-900">2026-01-15, 17:18:15 PM</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Collapsible Sections */}
-                    <Collapse
-                        defaultActiveKey={defaultActiveKey}
-                        expandIconPosition="end"
-                        ghost
-                        className="site-collapse-custom-collapse"
-                    >
-                        {/* Customer Details */}
-                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
-                            <div className="pl-0 pb-2">
-                                <CustomerInfoSimple customer={orderData.customer} />
-                            </div>
-                        </Panel>
-
-                        {/* Prescription (Read Only with Checks) */}
-                        <Panel
-                            header={
-                                <div className="flex justify-between items-center w-full pr-4">
-                                    <Text strong className="text-sm">Prescription</Text>
-                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
-                                </div>
-                            }
-                            key="2"
-                            className="border-b border-gray-100 py-2"
-                        >
-                            <div className="pl-0">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
-                                        <span className="text-sm font-medium">Stomachache</span>
-                                    </div>
-                                    <Button size="small">View uploaded prescription</Button>
-                                </div>
-                                <div className="mb-2">
-                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
-                                    <div className="space-y-3">
-                                        {orderData.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
-                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
-                                                    </div>
-                                                    <div>
-                                                        <Text strong className="block text-sm">{item.name}</Text>
-                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-8">
-                                                    <div className="text-right">
-                                                        <Text type="secondary" className="text-xs block">Price</Text>
-                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
-                                                    </div>
-                                                    <Checkbox checked disabled className="scale-110" />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </Panel>
-
-                        {/* Payment Details */}
-                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
-                            <div className="space-y-2 pl-0">
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Total order</Text>
-                                    <Text strong>791,800₫</Text>
-                                </div>
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Shipping fee</Text>
-                                    <Text strong>0₫</Text>
-                                </div>
-                                <div className="flex justify-between items-end pt-2">
-                                    <Text strong>Total payment</Text>
-                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
-                                </div>
-                            </div>
-                        </Panel>
-                    </Collapse>
                 </div>
-            </div>
 
-            {/* Footer */}
-            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
-                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
-                    <Button size="large">
-                        Contact Support
-                    </Button>
+                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-6">
+                    <div className="max-w-4xl mx-auto space-y-6">
+
+                        {/* Collapsible Sections */}
+                        <Collapse
+                            defaultActiveKey={defaultActiveKey}
+                            expandIconPosition="end"
+                            ghost
+                            className="site-collapse-custom-collapse"
+                        >
+                            {/* Customer Details */}
+                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                                <div className="pl-0 pb-2">
+                                    <CustomerInfoSimple customer={orderData.customer} />
+                                </div>
+                            </Panel>
+
+                            {/* Prescription (Read Only with Checks) */}
+                            <Panel
+                                header={
+                                    <div className="flex justify-between items-center w-full pr-4">
+                                        <Text strong className="text-sm">Prescription</Text>
+                                        <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                    </div>
+                                }
+                                key="2"
+                                className="border-b border-gray-100 py-2"
+                            >
+                                <div className="pl-0">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                            <span className="text-sm font-medium">Stomachache</span>
+                                        </div>
+                                        <Button size="small">View uploaded prescription</Button>
+                                    </div>
+                                    <div className="mb-2">
+                                        <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                        <div className="space-y-3">
+                                            {orderData.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                            <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                        </div>
+                                                        <div>
+                                                            <Text strong className="block text-sm">{item.name}</Text>
+                                                            <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-8">
+                                                        <div className="text-right">
+                                                            <Text type="secondary" className="text-xs block">Price</Text>
+                                                            <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                        </div>
+                                                        <Checkbox checked disabled className="scale-110" />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Panel>
+
+                            {/* Payment Details */}
+                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                                <div className="space-y-2 pl-0">
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Total order</Text>
+                                        <Text strong>791,800₫</Text>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Shipping fee</Text>
+                                        <Text strong>0₫</Text>
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2">
+                                        <Text strong>Total payment</Text>
+                                        <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                </div>
+                            </Panel>
+                        </Collapse>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                    <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                        <Button size="large">
+                            Contact Support
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -923,8 +938,8 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
     );
 
     return (
-        <div className="flex flex-col h-screen bg-white">
-            <GlobalHeader />
+        <div className="flex flex-col h-full bg-white">
+
             <OrderHeader
                 onBack={onBack}
                 currentStep={2} // Payment Step Active
@@ -932,147 +947,153 @@ const WaitingPaymentLayout = ({ orderData, onBack, onConfirmPayment }) => {
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 overflow-y-auto bg-white p-8">
-                <div className="max-w-4xl mx-auto space-y-6">
-
-                    {/* Awaiting Payment Banner Card */}
-                    <div className="border border-[#D48806] rounded-t-lg overflow-hidden">
-                        <div className="bg-[#B45F06] px-4 py-2 flex items-center gap-2 text-white">
-                            <WalletOutlined />
-                            <span className="font-medium">Awaiting payment</span>
-                        </div>
-                        <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <div className="text-gray-500 text-xs">Total due:</div>
-                                    <div className="text-2xl font-bold text-gray-900">791,800₫</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-gray-500 text-xs text-right">Holds order for:</div>
-                                    <div className="text-xl font-bold text-gray-900">14:59</div>
-                                </div>
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Awaiting Payment Banner Card - Fixed */}
+                <div className="z-20 shrink-0 px-8 pt-0 bg-white">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="border border-[#D48806] rounded-t-lg overflow-hidden">
+                            <div className="bg-[#B45F06] px-4 py-2 flex items-center gap-2 text-white">
+                                <WalletOutlined />
+                                <span className="font-medium">Awaiting payment</span>
                             </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                <div>
-                                    <span className="text-gray-500 text-xs block">Payment method</span>
-                                    <span className="font-medium text-gray-900">Bank Transfer</span>
-                                </div>
-                                <Button size="middle">Remind Customer</Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Collapsible Sections */}
-                    <Collapse
-                        defaultActiveKey={defaultActiveKey}
-                        expandIconPosition="end"
-                        ghost
-                        className="site-collapse-custom-collapse"
-                    >
-                        {/* Customer Details */}
-                        <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
-                            <div className="pl-0 pb-2">
-                                <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white p-4 border-b border-l border-r border-[#F0F0F0] rounded-b-lg shadow-sm">
+                                <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <Text type="secondary" className="block text-xs">Name</Text>
-                                        <Text strong>{orderData.customer.name}</Text>
+                                        <div className="text-gray-500 text-xs">Total due:</div>
+                                        <div className="text-2xl font-bold text-gray-900">791,800₫</div>
                                     </div>
+                                    <div className="text-right">
+                                        <div className="text-gray-500 text-xs text-right">Holds order for:</div>
+                                        <div className="text-xl font-bold text-gray-900">14:59</div>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                                     <div>
-                                        <Text type="secondary" className="block text-xs">Phone</Text>
-                                        <Text strong>{orderData.customer.phone}</Text>
+                                        <span className="text-gray-500 text-xs block">Payment method</span>
+                                        <span className="font-medium text-gray-900">Bank Transfer</span>
                                     </div>
-                                    <div className="col-span-2">
-                                        <Text type="secondary" className="block text-xs">Address</Text>
-                                        <Text strong>{orderData.customer.address}</Text>
-                                    </div>
+                                    <Button size="middle">Remind Customer</Button>
                                 </div>
                             </div>
-                        </Panel>
-
-                        {/* Prescription */}
-                        <Panel
-                            header={
-                                <div className="flex justify-between items-center w-full pr-4">
-                                    <Text strong className="text-sm">Prescription</Text>
-                                    <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
-                                </div>
-                            }
-                            key="2"
-                            className="border-b border-gray-100 py-2"
-                        >
-                            <div className="pl-0">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
-                                        <span className="text-sm font-medium">Stomachache</span>
-                                    </div>
-                                    <Button size="small">View uploaded prescription</Button>
-                                </div>
-                                <div className="mb-2">
-                                    <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
-                                    <div className="space-y-3">
-                                        {orderData.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
-                                                        <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
-                                                    </div>
-                                                    <div>
-                                                        <Text strong className="block text-sm">{item.name}</Text>
-                                                        <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <Text type="secondary" className="text-xs block">Price</Text>
-                                                    <Text strong>{item.price.toLocaleString()}đ</Text>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <Button type="link" icon={<PlusOutlined />} className="pl-0 mt-2">1 more</Button>
-                                </div>
-                            </div>
-                        </Panel>
-
-                        {/* Payment Details */}
-                        <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
-                            <div className="space-y-2 pl-0">
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Total order</Text>
-                                    <Text strong>791,800₫</Text>
-                                </div>
-                                <div className="flex justify-between">
-                                    <Text className="text-gray-600">Shipping fee</Text>
-                                    <Text strong>0₫</Text>
-                                </div>
-                                <div className="flex justify-between items-end pt-2">
-                                    <Text strong>Total payment</Text>
-                                    <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
-                                </div>
-                                <div className="flex justify-between pt-1">
-                                    <Text className="text-gray-600">Payment method</Text>
-                                    <Text className="text-gray-900">Bank transfer</Text>
-                                </div>
-                            </div>
-                        </Panel>
-                    </Collapse>
-
-                    {/* Shipping Method - Single Line */}
-                    <div className="border border-gray-200 rounded-lg p-4 flex justify-between items-center bg-white">
-                        <span className="font-medium text-gray-900">Shipping method</span>
-                        <div className="flex items-center gap-2">
-                            <CalendarOutlined className="text-gray-500" />
-                            <span className="font-medium">Standard - Receive within 24hrs</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Footer */}
-            <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
-                <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
-                    <Button type="text" danger>Cancel order</Button>
-                    <Button size="large" onClick={() => { }}>Contact</Button>
+                <div className="flex-1 overflow-y-auto px-8 pb-8 pt-6">
+                    <div className="max-w-4xl mx-auto space-y-6">
+
+                        {/* Collapsible Sections */}
+                        <Collapse
+                            defaultActiveKey={defaultActiveKey}
+                            expandIconPosition="end"
+                            ghost
+                            className="site-collapse-custom-collapse"
+                        >
+                            {/* Customer Details */}
+                            <Panel header={renderHeader("Customer details")} key="1" className="border-b border-gray-100 py-2">
+                                <div className="pl-0 pb-2">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <Text type="secondary" className="block text-xs">Name</Text>
+                                            <Text strong>{orderData.customer.name}</Text>
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" className="block text-xs">Phone</Text>
+                                            <Text strong>{orderData.customer.phone}</Text>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <Text type="secondary" className="block text-xs">Address</Text>
+                                            <Text strong>{orderData.customer.address}</Text>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Panel>
+
+                            {/* Prescription */}
+                            <Panel
+                                header={
+                                    <div className="flex justify-between items-center w-full pr-4">
+                                        <Text strong className="text-sm">Prescription</Text>
+                                        <Text type="secondary" className="text-xs">No. <Text strong className="text-gray-900">BN000000002</Text></Text>
+                                    </div>
+                                }
+                                key="2"
+                                className="border-b border-gray-100 py-2"
+                            >
+                                <div className="pl-0">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <Text type="secondary" className="text-xs mr-2">Diagnosis</Text>
+                                            <span className="text-sm font-medium">Stomachache</span>
+                                        </div>
+                                        <Button size="small">View uploaded prescription</Button>
+                                    </div>
+                                    <div className="mb-2">
+                                        <Text type="secondary" className="text-xs block mb-2">Total item(s): {orderData.items.length}</Text>
+                                        <div className="space-y-3">
+                                            {orderData.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-white rounded border border-gray-200 flex items-center justify-center p-1">
+                                                            <img src={item.image} className="w-full h-full object-contain" alt={item.name} />
+                                                        </div>
+                                                        <div>
+                                                            <Text strong className="block text-sm">{item.name}</Text>
+                                                            <Text type="secondary" className="text-xs">Qty: {item.qty}</Text>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <Text type="secondary" className="text-xs block">Price</Text>
+                                                        <Text strong>{item.price.toLocaleString()}đ</Text>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <Button type="link" icon={<PlusOutlined />} className="pl-0 mt-2">1 more</Button>
+                                    </div>
+                                </div>
+                            </Panel>
+
+                            {/* Payment Details */}
+                            <Panel header={renderHeader("Payment details")} key="3" className="border-b border-gray-100 py-2">
+                                <div className="space-y-2 pl-0">
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Total order</Text>
+                                        <Text strong>791,800₫</Text>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <Text className="text-gray-600">Shipping fee</Text>
+                                        <Text strong>0₫</Text>
+                                    </div>
+                                    <div className="flex justify-between items-end pt-2">
+                                        <Text strong>Total payment</Text>
+                                        <Title level={3} style={{ margin: 0 }}>791,800₫</Title>
+                                    </div>
+                                    <div className="flex justify-between pt-1">
+                                        <Text className="text-gray-600">Payment method</Text>
+                                        <Text className="text-gray-900">Bank transfer</Text>
+                                    </div>
+                                </div>
+                            </Panel>
+                        </Collapse>
+
+                        {/* Shipping Method - Single Line */}
+                        <div className="border border-gray-200 rounded-lg p-4 flex justify-between items-center bg-white">
+                            <span className="font-medium text-gray-900">Shipping method</span>
+                            <div className="flex items-center gap-2">
+                                <CalendarOutlined className="text-gray-500" />
+                                <span className="font-medium">Standard - Receive within 24hrs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-white border-t border-[#F0F0F0] px-8 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10 sticky bottom-0">
+                    <div className="max-w-4xl mx-auto flex justify-end items-center gap-4">
+                        <Button type="text" danger>Cancel order</Button>
+                        <Button size="large" onClick={() => { }}>Contact</Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1097,7 +1118,7 @@ const CustomerInfo = ({ customer }) => {
                         <Text className="text-gray-500 text-xs block mb-1">Phone number</Text>
                         <div className="flex items-center gap-2">
                             <Text strong className="text-base">{customer.phone}</Text>
-                            <Button size="small" icon={<MessageOutlined />} className="text-gray-400 border-gray-200" />
+                            <Button size="small" icon={<CopyOutlined />} className="text-gray-400 border-gray-200" />
                         </div>
                     </div>
                     <div className="col-span-2">
@@ -1110,15 +1131,71 @@ const CustomerInfo = ({ customer }) => {
     );
 };
 
+// Mock Products for Selection
+const AVAILABLE_PRODUCTS = [
+    { label: 'Lisinopril 10mg', value: 'Lisinopril 10mg', unit: 'Strip', price: 128000, image: lisinoprilImg },
+    { label: 'Gastropulgite', value: 'Gastropulgite', unit: 'Box', price: 250000, image: gastropulgiteImg },
+    { label: 'Vitamin C 500mg', value: 'Vitamin C 500mg', unit: 'Bottle', price: 150000, image: probioticsImg },
+    { label: 'Pain Relief Patch', value: 'Pain Relief Patch', unit: 'Pack', price: 100000, image: sucralfateImg },
+    { label: 'Cough Syrup', value: 'Cough Syrup', unit: 'Bottle', price: 85000, image: omeprazoleImg },
+    { label: 'Panadol Extra', value: 'Panadol Extra', unit: 'Box', price: 150000, image: gastropulgiteImg },
+];
+
 const ProductList = ({ items }) => {
+    const [prescNo, setPrescNo] = useState('BN000000002');
+    const [diagnosis, setDiagnosis] = useState('Stomachache');
+    const [localItems, setLocalItems] = useState(() =>
+        items.map((item, idx) => ({ ...item, id: item.id || `gen-id-${idx}` }))
+    );
+
+    useEffect(() => {
+        setLocalItems(items.map((item, idx) => ({ ...item, id: item.id || `gen-id-${idx}` })));
+    }, [items]);
+
+    const handleRemoveItem = (itemId) => {
+        setLocalItems(prev => prev.filter(item => item.id !== itemId));
+    };
+
+    const handleAddItem = () => {
+        setLocalItems(prev => [{
+            id: `new-${Date.now()}`,
+            name: null, // Empty name triggers Select mode
+            qty: 1,
+            unit: '',
+            price: 0,
+            image: null,
+            isNew: true
+        }, ...prev]);
+    };
+
+    const handleProductSelect = (itemId, productName) => {
+        const product = AVAILABLE_PRODUCTS.find(p => p.value === productName);
+        if (product) {
+            setLocalItems(prev => prev.map(item =>
+                item.id === itemId
+                    ? { ...item, name: product.value, unit: product.unit, price: product.price, image: product.image, isNew: false }
+                    : item
+            ));
+        }
+    };
+
+    const handleUpdateQty = (itemId, newQty) => {
+        setLocalItems(prev => prev.map(item => item.id === itemId ? { ...item, qty: newQty } : item));
+    }
+
+
     return (
         <div className="mb-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
                 <Title level={5} style={{ margin: 0 }}>Prescription</Title>
                 <div className="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1">
-                    <span className="text-gray-500 text-xs">No.</span>
-                    <span className="font-bold text-xs text-gray-900">BN000000002</span>
+                    <span className="text-gray-500 text-xs shrink-0">No.</span>
+                    <Input
+                        value={prescNo}
+                        onChange={(e) => setPrescNo(e.target.value)}
+                        className="font-bold text-xs text-gray-900 border-none p-0 h-auto bg-transparent focus:shadow-none w-[100px]"
+                    />
                     <ExportOutlined className="text-gray-400 text-xs cursor-pointer" />
                 </div>
             </div>
@@ -1126,23 +1203,27 @@ const ProductList = ({ items }) => {
             {/* Diagnosis */}
             <div className="mb-6 bg-white border border-gray-200 rounded p-0 grid grid-cols-[100px_1fr] items-center">
                 <div className="px-3 py-2 text-gray-500 text-sm border-r border-gray-200 bg-gray-50">Diagnosis</div>
-                <div className="px-3 py-2 font-medium text-gray-900">Stomachache</div>
+                <Input
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                    className="px-3 py-2 font-medium text-gray-900 border-none rounded-none focus:shadow-none bg-transparent"
+                />
             </div>
 
             {/* Items Header */}
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
-                    <span className="text-gray-500 text-sm">Items: <strong className="text-gray-900">{items.length}</strong></span>
+                    <span className="text-gray-500 text-sm">Items: <strong className="text-gray-900">{localItems.length}</strong></span>
                     <span className="bg-[#FEF3C7] text-[#92400E] text-xs font-medium px-2 py-0.5 rounded border border-[#FDE68A]">
                         Drafted by AI. Verify carefully.
                     </span>
                 </div>
-                <Button type="link" icon={<PlusOutlined />} className="text-blue-600 font-medium px-0">Add item</Button>
+                <Button type="link" icon={<PlusOutlined />} onClick={handleAddItem} className="text-blue-600 font-medium px-0">Add item</Button>
             </div>
 
             {/* Items List */}
             <div className="flex flex-col gap-4">
-                {items.map((item) => (
+                {localItems.map((item) => (
                     <div key={item.id} className="flex gap-4 p-4 bg-white border border-gray-200 rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                         {/* Thumbnail */}
                         <div className="w-16 h-16 bg-white rounded border border-gray-200 flex items-center justify-center flex-shrink-0 p-1">
@@ -1159,11 +1240,27 @@ const ProductList = ({ items }) => {
                             {item.warning ? (
                                 <div>
                                     {/* Name Row */}
-                                    <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white mb-2 relative hover:border-blue-300 transition-colors">
-                                        <span className="text-gray-400 text-xs mr-2">Name</span>
-                                        <span className="text-gray-900 font-bold flex-1">{item.name}</span>
-                                        <DownOutlined className="text-gray-900 text-xs" />
+                                    <div className="flex items-center gap-2 w-full mb-2">
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white relative hover:border-blue-300 transition-colors flex-1">
+                                            <span className="text-gray-400 text-xs mr-2">Name</span>
+                                            <span className="text-gray-900 font-bold flex-1">{item.name}</span>
+                                            <DownOutlined className="text-gray-900 text-xs" />
+                                        </div>
+                                        <Popconfirm
+                                            title="Remove item"
+                                            description="Are you sure to remove this item?"
+                                            onConfirm={() => handleRemoveItem(item.id)}
+                                            okText="Yes"
+                                            cancelText="No"
+                                        >
+                                            <Button
+                                                danger
+                                                icon={<DeleteOutlined />}
+                                                className="flex-shrink-0 border-red-200 text-red-500 hover:bg-red-50"
+                                            />
+                                        </Popconfirm>
                                     </div>
+
 
                                     {/* Warning Row */}
                                     <div className="text-[#DAA507] text-xs font-medium flex items-center gap-1.5 mb-2 pl-1">
@@ -1219,20 +1316,64 @@ const ProductList = ({ items }) => {
                             ) : (
                                 <>
                                     {/* Row 1: Name */}
-                                    <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors w-full relative">
-                                        <span className="text-gray-400 text-xs mr-2">Name</span>
-                                        <span className="text-gray-900 font-medium flex-1">{item.name}</span>
-                                        <DownOutlined className="text-gray-400 text-xs" />
+                                    <div className="flex items-center gap-2 w-full">
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors flex-1 relative">
+                                            <span className="text-gray-400 text-xs mr-2">Name</span>
+                                            {!item.name ? (
+                                                <Select
+                                                    showSearch
+                                                    placeholder="Select medicine"
+                                                    style={{ width: '100%' }}
+                                                    bordered={false}
+                                                    onChange={(val) => handleProductSelect(item.id, val)}
+                                                    options={AVAILABLE_PRODUCTS}
+                                                    filterOption={(input, option) =>
+                                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                    }
+                                                />
+                                            ) : (
+                                                <span className="text-gray-900 font-medium flex-1">{item.name}</span>
+                                            )}
+                                            {item.name && <DownOutlined className="text-gray-400 text-xs" />}
+                                        </div>
+                                        <Popconfirm
+                                            title="Remove item"
+                                            description="Are you sure to remove this item?"
+                                            onConfirm={() => handleRemoveItem(item.id)}
+                                            okText="Yes"
+                                            cancelText="No"
+                                        >
+                                            <Button
+                                                danger
+                                                icon={<DeleteOutlined />}
+                                                className="flex-shrink-0 border-red-200 text-red-500 hover:bg-red-50"
+                                            />
+                                        </Popconfirm>
                                     </div>
 
                                     {/* Row 2: Qt / Unit / Price */}
                                     <div className="grid grid-cols-[1fr_1fr_1.5fr] gap-3">
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
-                                            <span className="text-gray-400 text-xs mr-2">Qty</span>
+                                        <div className="border border-gray-200 rounded px-2 py-1 flex items-center bg-white hover:border-blue-300 transition-colors focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+                                            <span className="text-gray-400 text-xs mr-2 select-none">Qty</span>
+                                            <Button
+                                                type="text"
+                                                size="small"
+                                                icon={<MinusOutlined style={{ fontSize: '10px' }} />}
+                                                onClick={() => handleUpdateQty(item.id, Math.max(1, Number(item.qty) - 1))}
+                                                className="flex items-center justify-center text-gray-400 hover:text-gray-600 min-w-[24px] h-[24px]"
+                                            />
                                             <input
                                                 type="number"
-                                                defaultValue={item.qty}
-                                                className="flex-1 w-full min-w-0 outline-none text-gray-900 font-medium bg-transparent p-0 m-0"
+                                                value={item.qty}
+                                                onChange={(e) => handleUpdateQty(item.id, Math.max(1, parseInt(e.target.value) || 1))}
+                                                className="w-[30px] text-center border-none focus:outline-none font-medium text-gray-900 text-sm bg-transparent appearance-none m-0"
+                                            />
+                                            <Button
+                                                type="text"
+                                                size="small"
+                                                icon={<PlusOutlined style={{ fontSize: '10px' }} />}
+                                                onClick={() => handleUpdateQty(item.id, Number(item.qty) + 1)}
+                                                className="flex items-center justify-center text-gray-400 hover:text-gray-600 min-w-[24px] h-[24px]"
                                             />
                                         </div>
                                         <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
@@ -1438,8 +1579,8 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
 
     // Default Review Layout
     return (
-        <div className="h-screen flex flex-col bg-[#F9FAFB] overflow-hidden font-inter">
-            <GlobalHeader />
+        <div className="h-full flex flex-col bg-[#F9FAFB] overflow-hidden font-inter">
+
             <OrderHeader
                 onBack={onBack}
                 currentStep={1}
@@ -1458,17 +1599,21 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
 
                     {/* Right Column: Order Form (50% width) */}
                     <Col flex="0 1 50%" className="h-full border-l border-[#F0F0F0] flex flex-col bg-[#FAFAFA]">
-                        <div className="flex-1 overflow-y-auto p-6">
-                            {/* Status Bar: Review needed */}
-                            <div className="border border-purple-200 bg-purple-50 rounded-lg mb-6 overflow-hidden">
-                                <div className="bg-purple-100 flex items-center gap-2 px-4 py-2 text-purple-900 border-b border-purple-200">
+                        {/* Status Bar: Review needed - Fixed at top */}
+                        <div className="z-20 shadow-sm shrink-0">
+                            <div className="border-b border-purple-200 bg-purple-50">
+                                <div className="bg-purple-100 flex items-center gap-2 px-6 py-3 text-purple-900 border-b border-purple-200">
                                     <ClockCircleOutlined />
                                     <span className="font-medium">Review needed</span>
                                 </div>
-                                <div className="bg-white px-4 py-3">
+                                <div className="bg-white px-6 py-3 border-b border-purple-100">
                                     <span className="text-gray-900 font-medium">Pharmacist review of prescriptions is mandatory by health regulations.</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+
 
                             <CustomerInfo customer={effectiveOrder.customer} />
                             <ProductList items={effectiveOrder.items} />

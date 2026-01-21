@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import OrdersPage from './components/OrdersPage';
 import OrderDetailPage from './components/OrderDetailPage';
 import OrderDetailAntd from './components/OrderDetailAntd';
-import { notification } from 'antd';
+import { notification, Button } from 'antd';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -37,6 +37,28 @@ const mockOrders = [
         ],
         total: '628,000',
         delivery: 'Not defined',
+        note: 'New order received',
+        noteType: 'info',
+        action: 'Review & Consult'
+    },
+    {
+        id: 'ORD-1013',
+        customer: {
+            name: 'Sarah Connor',
+            phone: '0909 123 456',
+            address: 'Unknown Location'
+        },
+        date: '2026-01-20',
+        updated: 'Just now',
+        status: 'New',
+        category: 'Flu',
+        itemsCount: 2,
+        items: [
+            { name: 'Panadol', image: gastropulgiteImg, qty: '1', unit: 'Box', price: 150000 },
+            { name: 'Vitamin C', image: probioticsImg, qty: '1', unit: 'Bottle', price: 120000 }
+        ],
+        total: '270,000',
+        delivery: 'Standard',
         note: 'New order received',
         noteType: 'info',
         action: 'Review & Consult'
@@ -313,6 +335,26 @@ const mockOrders = [
     }
 ];
 
+const GlobalHeader = () => (
+    <div className="h-16 bg-white border-b border-[#F0F0F0] flex items-center justify-end px-6 gap-4 shrink-0 z-20 relative">
+        <Button
+            shape="circle"
+            icon={<span role="img" aria-label="mail" className="anticon anticon-mail"><svg viewBox="64 64 896 896" focusable="false" data-icon="mail" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32zm-40 110.8V792H136V270.8l-27.6-21.5 39.3-50.6 42.8 33.3L643.1 484 912 240l22.9 39.4-38.9 31.4z"></path></svg></span>}
+            className="border-gray-200"
+        />
+        <Button
+            shape="circle"
+            icon={
+                <div className="relative flex items-center justify-center">
+                    <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                    <span role="img" aria-label="bell" className="anticon anticon-bell"><svg viewBox="64 64 896 896" focusable="false" data-icon="bell" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M816 768h-24V428c0-141.1-104.3-257.8-240-277.2V112c0-22.1-17.9-40-40-40s-40 17.9-40 40v38.8C336.3 170.2 232 286.9 232 428v340h-24c-17.7 0-32 14.3-32 32v16h736v-16c0-17.7-14.3-32-32-32zm-426-88h244V428c0-54.8-19.1-104.7-51.2-143.2a15.2 15.2 0 00-6.8-6.4C554.9 271.6 532.7 268 512 268c-20.7 0-42.9 3.6-62 10.4-3.5 1.2-6.5 3.5-8.8 6.4C408.9 323.3 390 373.2 390 428v252zM512 944c53 0 96-43 96-96h-192c0 53 43 96 96 96z"></path></svg></span>
+                </div>
+            }
+            className="border-gray-200"
+        />
+    </div>
+);
+
 export default function App() {
     const [orders, setOrders] = useState(mockOrders);
     const [currentView, setCurrentView] = useState('list'); // 'list' or 'detail'
@@ -438,55 +480,55 @@ export default function App() {
     React.useEffect(() => {
         setHasLoaded(true);
     }, []);
-
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB]">
             <Sidebar collapsed={isSidebarCollapsed} toggleSidebar={() => setSidebarCollapsed(!isSidebarCollapsed)} />
-            <div className="flex-1 w-full min-w-0 relative">
-                <AnimatePresence mode="wait">
-                    {currentView === 'list' ? (
-                        <motion.div
-                            key="list"
-                            initial={!hasLoaded ? { opacity: 0, x: -20 } : false}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.15 }}
-                            className="h-full w-full absolute top-0 left-0"
-                        >
-                            <OrdersPage
-                                orders={orders}
-                                onNavigateToDetail={(order) => { setSelectedOrder(order); setCurrentView('detail'); }}
-                                notificationTab={notificationTab}
-                                activeTab={activeTab}
-                                onTabChange={setActiveTab}
-                                lastSelectedOrder={selectedOrder}
-                                onDemoCheat={handleDemoCheat}
-                                savedScrollPos={homeScrollPos}
-                                onSaveScroll={setHomeScrollPos}
-                                hasLoaded={hasLoaded}
-                            />
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="detail"
-                            initial={{ opacity: 0, x: "20%" }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: "20%" }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="h-full w-full absolute top-0 left-0 bg-[#F9FAFB] z-10"
-                        >
-                            <OrderDetailAntd
-                                onBack={() => setCurrentView('list')}
-                                onConfirm={handleConfirm}
-                                onUpdate={handleUpdateOrder}
-                                order={selectedOrder}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            <div className="flex-1 w-full min-w-0 relative flex flex-col">
+                <GlobalHeader />
+                <div className="flex-1 relative w-full overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        {currentView === 'list' ? (
+                            <motion.div
+                                key="list"
+                                initial={!hasLoaded ? { opacity: 0, x: -20 } : false}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.15 }}
+                                className="h-full w-full absolute top-0 left-0"
+                            >
+                                <OrdersPage
+                                    orders={orders}
+                                    onNavigateToDetail={(order) => { setSelectedOrder(order); setCurrentView('detail'); }}
+                                    notificationTab={notificationTab}
+                                    activeTab={activeTab}
+                                    onTabChange={setActiveTab}
+                                    lastSelectedOrder={selectedOrder}
+                                    onDemoCheat={handleDemoCheat}
+                                    savedScrollPos={homeScrollPos}
+                                    onSaveScroll={setHomeScrollPos}
+                                    hasLoaded={hasLoaded}
+                                />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="detail"
+                                initial={{ opacity: 0, x: "20%" }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: "20%" }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="h-full w-full absolute top-0 left-0 bg-[#F9FAFB] z-10"
+                            >
+                                <OrderDetailAntd
+                                    onBack={() => setCurrentView('list')}
+                                    onConfirm={handleConfirm}
+                                    onUpdate={handleUpdateOrder}
+                                    order={selectedOrder}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </div>
     );
 }
-
-

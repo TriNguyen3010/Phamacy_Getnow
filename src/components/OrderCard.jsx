@@ -93,7 +93,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
             case 'Needs action': borderClass = 'border-l-4 border-l-red-600'; break;
             case 'Queue': borderClass = 'border-l-4 border-l-yellow-500'; break;
             case 'In transit': borderClass = 'border-l-4 border-l-green-500'; break;
-            case 'Archived': borderClass = 'border-l-4 border-l-gray-300'; break;
+            case 'Past Orders': borderClass = 'border-l-4 border-l-gray-300'; break;
             default: borderClass = 'border-l-4 border-l-transparent';
         }
 
@@ -117,7 +117,7 @@ export default function OrderCard({ order, onClick, group, highlighted }) {
             case 'Needs action': return '220, 38, 38'; // red-600
             case 'Queue': return '234, 179, 8'; // yellow-500
             case 'In transit': return '34, 197, 94'; // green-500
-            case 'Archived': return '209, 213, 219'; // gray-300
+            case 'Past Orders': return '209, 213, 219'; // gray-300
             default: return '59, 130, 246'; // blue-500 fallback
         }
     };

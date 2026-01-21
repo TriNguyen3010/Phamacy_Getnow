@@ -14,7 +14,6 @@ import sucralfateImg from './assets/products/sucralfate.png';
 import gastropulgiteImg from './assets/products/gastropulgite.png';
 import probioticsImg from './assets/products/probiotics.png';
 
-// Extended mock data to cover ALL statuses
 const mockOrders = [
     // --- Needs Action ---
     {
@@ -26,7 +25,7 @@ const mockOrders = [
         },
         date: '2026-01-20',
         updated: 'Just now',
-        status: 'New',
+        status: 'Reviewing',
         category: 'Stomachache',
         itemsCount: 4,
         items: [
@@ -50,7 +49,7 @@ const mockOrders = [
         },
         date: '2026-01-20',
         updated: 'Just now',
-        status: 'New',
+        status: 'Reviewing',
         category: 'Flu',
         itemsCount: 2,
         items: [
@@ -87,204 +86,7 @@ const mockOrders = [
         action: 'Consult'
     },
 
-    // --- Queue ---
-    {
-        id: 'ORD-1010',
-        customer: {
-            name: 'John Doe',
-            phone: '0912 345 678',
-            address: '789 Vo Van Kiet, District 5, HCMC'
-        },
-        date: '2026-01-19',
-        updated: '10m ago',
-        status: 'Waiting for Payment',
-        category: 'Supplementary',
-        itemsCount: 3,
-        items: [
-            { name: 'Vitamins', image: probioticsImg, qty: '1', unit: 'Bottle', price: 320000 },
-            { name: 'Fish Oil', image: gastropulgiteImg, qty: '1', unit: 'Bottle', price: 450000 },
-            { name: 'Calcium Supplements', image: sucralfateImg, qty: '2', unit: 'Box', price: 200000 }
-        ],
-        total: '970,000',
-        delivery: 'Standard',
-        note: 'To be cancelled within 30min when no payment',
-        noteType: 'warning',
-        action: 'Check details'
-    },
-    {
-        id: 'ORD-1009',
-        customer: {
-            name: 'Sarah Smith',
-            phone: '0987 654 321',
-            address: '101 Dien Bien Phu, Binh Thanh, HCMC'
-        },
-        date: '2026-01-19',
-        updated: '15m ago',
-        status: 'Packing',
-        category: 'Flu',
-        itemsCount: 5,
-        items: [
-            { name: 'Cold Medicine', image: gastropulgiteImg, qty: '2', unit: 'Box', price: 150000 },
-            { name: 'Cough Syrup', image: omeprazoleImg, qty: '1', unit: 'Bottle', price: 85000 },
-            { name: 'Throat Lozenges', image: probioticsImg, qty: '3', unit: 'Pack', price: 90000 },
-            { name: 'Nasal Spray', image: sucralfateImg, qty: '1', unit: 'Bottle', price: 60000 },
-            { name: 'Vitamin C', image: probioticsImg, qty: '1', unit: 'Box', price: 120000 }
-        ],
-        total: '505,000',
-        delivery: 'Instant',
-        note: 'Packing in progress',
-        noteType: 'info',
-        action: 'Print label'
-    },
-    {
-        id: 'ORD-1008',
-        customer: {
-            name: 'Michael Chen',
-            phone: '0933 444 555',
-            address: '202 Cach Mang Thang 8, District 3, HCMC'
-        },
-        date: '2026-01-19',
-        updated: '30m ago',
-        status: 'Ready to Ship',
-        category: 'Cough',
-        itemsCount: 4,
-        items: [
-            { name: 'Cough Syrup', image: gastropulgiteImg, qty: '1', unit: 'Bottle', price: 85000 },
-            { name: 'Herbal Tea', image: omeprazoleImg, qty: '2', unit: 'Box', price: 100000 },
-            { name: 'Honey', image: probioticsImg, qty: '1', unit: 'Jar', price: 200000 },
-            { name: 'Ginger Candy', image: sucralfateImg, qty: '3', unit: 'Pack', price: 45000 }
-        ],
-        total: '430,000',
-        delivery: 'Standard',
-        note: 'Ready for pickup',
-        noteType: 'neutral',
-        action: 'Check details'
-    },
-    // Duplicate Ready to Ship
-    {
-        id: 'ORD-1014',
-        customer: {
-            name: 'Robert Downey',
-            phone: '0933 666 777',
-            address: 'Malibu Drive, CA'
-        },
-        date: '2026-01-19',
-        updated: 'Just now',
-        status: 'Ready to Ship',
-        category: 'First Aid',
-        itemsCount: 5,
-        items: [
-            { name: 'Medical Kit', image: gastropulgiteImg, qty: '1', unit: 'Kit', price: 450000 },
-            { name: 'Bandages', image: sucralfateImg, qty: '5', unit: 'Pack', price: 50000 },
-            { name: 'Antiseptic', image: omeprazoleImg, qty: '2', unit: 'Bottle', price: 80000 },
-            { name: 'Cotton Balls', image: probioticsImg, qty: '3', unit: 'Bag', price: 30000 },
-            { name: 'Tweezers', image: sucralfateImg, qty: '1', unit: 'Pair', price: 25000 }
-        ],
-        total: '635,000',
-        delivery: 'Standard',
-        note: 'Ready for pickup',
-        noteType: 'neutral',
-        action: 'Check details'
-    },
-
-    // --- In Transit ---
-    {
-        id: 'ORD-1007',
-        customer: {
-            name: 'Emily White',
-            phone: '0905 111 222',
-            address: '303 Hai Ba Trung, District 1, HCMC'
-        },
-        date: '2026-01-18',
-        updated: '1h ago',
-        status: 'Driver Picking Up',
-        category: 'General',
-        itemsCount: 3,
-        items: [
-            { name: 'Bandages', image: sucralfateImg, qty: '2', unit: 'Pack', price: 45000 },
-            { name: 'Pain Reliever', image: omeprazoleImg, qty: '1', unit: 'Box', price: 120000 },
-            { name: 'Ice Pack', image: probioticsImg, qty: '1', unit: 'Pack', price: 50000 }
-        ],
-        total: '215,000',
-        delivery: 'Instant',
-        note: 'Driver assigned: Tai Pham',
-        noteType: 'info',
-        action: 'Check details'
-    },
-    {
-        id: 'ORD-1006',
-        customer: {
-            name: 'David Brown',
-            phone: '0944 666 777',
-            address: '404 Pham Van Dong, Go Vap, HCMC'
-        },
-        date: '2026-01-18',
-        updated: '2h ago',
-        status: 'Out for Delivery',
-        category: 'Prescription',
-        itemsCount: 4,
-        items: [
-            { name: 'Antibiotics', image: omeprazoleImg, qty: '1', unit: 'Box', price: 560000 },
-            { name: 'Probiotics', image: probioticsImg, qty: '2', unit: 'Box', price: 400000 },
-            { name: 'Vitamin B Complex', image: gastropulgiteImg, qty: '1', unit: 'Bottle', price: 250000 },
-            { name: 'Mineral Water', image: sucralfateImg, qty: '6', unit: 'Bottle', price: 30000 }
-        ],
-        total: '1,240,000',
-        delivery: 'Standard',
-        note: 'Arriving by 5:00 PM',
-        noteType: 'neutral',
-        action: 'Check details'
-    },
-    // Duplicate Out for Delivery
-    {
-        id: 'ORD-1015',
-        customer: {
-            name: 'Steve Rogers',
-            phone: '0911 222 333',
-            address: 'Brooklyn, NY'
-        },
-        date: '2026-01-18',
-        updated: '3h ago',
-        status: 'Out for Delivery',
-        category: 'Supplements',
-        itemsCount: 3,
-        items: [
-            { name: 'Whey Protein', image: probioticsImg, qty: '1', unit: 'Tub', price: 900000 },
-            { name: 'Pre-Workout', image: gastropulgiteImg, qty: '1', unit: 'Tub', price: 600000 },
-            { name: 'Shaker Bottle', image: sucralfateImg, qty: '1', unit: 'Piece', price: 150000 }
-        ],
-        total: '1,650,000',
-        delivery: 'Instant',
-        note: 'Arriving soon',
-        noteType: 'neutral',
-        action: 'Check details'
-    },
-
-    // --- Archived ---
-    {
-        id: 'ORD-1005',
-        customer: {
-            name: 'Jessica Green',
-            phone: '0918 999 000',
-            address: '505 Hong Bang, District 5, HCMC'
-        },
-        date: '2026-01-17',
-        updated: '1d ago',
-        status: 'Completed',
-        category: 'Beauty',
-        itemsCount: 4,
-        items: [
-            { name: 'Moisturizer', image: sucralfateImg, qty: '1', unit: 'Jar', price: 210000 },
-            { name: 'Face Wash', image: omeprazoleImg, qty: '1', unit: 'Tube', price: 150000 },
-            { name: 'Toner', image: probioticsImg, qty: '1', unit: 'Bottle', price: 180000 },
-            { name: 'Cotton Pads', image: gastropulgiteImg, qty: '2', unit: 'Pack', price: 60000 }
-        ],
-        total: '600,000',
-        delivery: 'Standard',
-        note: 'Delivered successfully',
-        noteType: 'neutral',
-        action: 'Check details'
-    },
+    // --- Past Orders (Archived) ---
     {
         id: 'ORD-1004',
         customer: {
@@ -415,9 +217,9 @@ export default function App() {
         setOrders(prevOrders => {
             const newOrders = [...prevOrders];
             const idx = newOrders.findIndex(o =>
-                (type === 'pickup' && o.status === 'Ready to Ship') ||
+                (type === 'pickup' && (o.status === 'Ready to Ship' || o.status === 'Driver Picking Up')) ||
                 (type === 'payment' && o.status === 'Waiting for Payment') ||
-                (type === 'complete' && o.status === 'Out for Delivery')
+                (type === 'complete' && (o.status === 'Out for Delivery' || o.status === 'Driver Picking Up'))
             );
 
             if (idx !== -1) {
@@ -426,7 +228,7 @@ export default function App() {
                 let newAction = o.action;
 
                 if (type === 'pickup') {
-                    newStatus = 'Driver Picking Up';
+                    newStatus = 'Out for Delivery';
                     newAction = 'Check details';
                 } else if (type === 'payment') {
                     newStatus = 'Packing';
@@ -451,7 +253,7 @@ export default function App() {
                     setNotificationTab('In transit');
                     notification.info({
                         message: title,
-                        description: `${updatedOrder.id} has been assigned to driver.`,
+                        description: `${updatedOrder.id} has been picked up by driver.`,
                         placement: 'topRight',
                         duration: 4,
                     });

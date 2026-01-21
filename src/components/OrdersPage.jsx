@@ -30,7 +30,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
         'Needs action': true,
         'Queue': true,
         'In transit': true,
-        'Archived': true
+        'Past Orders': true
     });
 
     // Cheat Code Logic
@@ -68,7 +68,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
         'Needs action': ['New', 'Reviewing', 'Packing'],
         'Queue': ['Waiting for Payment', 'Ready to Ship'],
         'In transit': ['Driver Picking Up', 'Out for Delivery', 'Driver Assigned'],
-        'Archived': ['Completed', 'Cancelled', 'Returned']
+        'Past Orders': ['Completed', 'Cancelled', 'Returned']
     };
 
     const getGroupForOrder = (status) => {
@@ -101,7 +101,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
         { id: 'All', label: 'All' },
         { id: 'Queue', label: 'Queue' },
         { id: 'In transit', label: 'In transit' },
-        { id: 'Archived', label: 'Archived' },
+        { id: 'Past Orders', label: 'Past Orders' },
     ];
 
     const groupedOrders = orders.reduce((acc, order) => {
@@ -112,8 +112,8 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
     }, {});
 
     const displayGroups = activeTab === 'All'
-        ? ['Needs action', 'Queue', 'In transit', 'Archived']
-        : [activeTab === 'Queue' ? 'Queue' : activeTab === 'In transit' ? 'In transit' : 'Archived'];
+        ? ['Needs action', 'Queue', 'In transit', 'Past Orders']
+        : [activeTab === 'Queue' ? 'Queue' : activeTab === 'In transit' ? 'In transit' : 'Past Orders'];
 
     return (
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-gray-50 h-screen font-inter">
@@ -215,7 +215,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                     <div className="p-6 space-y-8 flex-1">
                         {displayGroups.map(group => {
                             const orders = groupedOrders[group] || [];
-                            if (orders.length === 0) return null;
+                            // removed early return for empty orders
                             const isExpanded = expandedGroups[group];
 
                             // Color mapping for Group Titles
@@ -224,7 +224,7 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                                     case 'Needs action': return 'text-red-600';
                                     case 'Queue': return 'text-yellow-600';
                                     case 'In transit': return 'text-green-600';
-                                    case 'Archived': return 'text-gray-500';
+                                    case 'Past Orders': return 'text-gray-500';
                                     default: return 'text-gray-700';
                                 }
                             };
@@ -250,15 +250,21 @@ export default function OrdersPage({ onNavigateToDetail, notificationTab, active
                                                 exit={{ height: 0, opacity: 0 }}
                                                 className="space-y-3"
                                             >
-                                                {orders.map((order, idx) => (
-                                                    <OrderCard
-                                                        key={order.id}
-                                                        order={order}
-                                                        group={group}
-                                                        onClick={() => handleNavigate(order)}
-                                                        highlighted={highlightedId === order.id}
-                                                    />
-                                                ))}
+                                                {orders.length === 0 ? (
+                                                    <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+                                                        <p className="text-gray-400 text-sm italic">No records in this group yet.</p>
+                                                    </div>
+                                                ) : (
+                                                    orders.map((order, idx) => (
+                                                        <OrderCard
+                                                            key={order.id}
+                                                            order={order}
+                                                            group={group}
+                                                            onClick={() => handleNavigate(order)}
+                                                            highlighted={highlightedId === order.id}
+                                                        />
+                                                    ))
+                                                )}
                                             </motion.div>
                                         )}
                                     </AnimatePresence>

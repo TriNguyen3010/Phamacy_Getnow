@@ -193,12 +193,22 @@ export default function App() {
 
         setOrders(prevOrders => prevOrders.map(o => {
             if (o.id === orderId) {
-                // Clear note text if moving away from Review/New status
                 let { note, noteType } = o;
-                if (['Reviewing', 'New'].includes(o.status) && !['Reviewing', 'New'].includes(newStatus)) {
+
+                // robust note handling
+                const isReviewPhase = ['Reviewing', 'New'].includes(o.status);
+                const willBeReviewPhase = ['Reviewing', 'New'].includes(newStatus);
+
+                if (isReviewPhase && !willBeReviewPhase) {
+                    // Leaving review phase -> Clear note
                     note = null;
                     noteType = null;
+                } else if (newStatus === 'Reviewing' && o.status !== 'Reviewing') {
+                    // Entering Reviewing -> Set note
+                    note = 'Pharmacist is reviewing';
+                    noteType = 'warning';
                 }
+
                 return { ...o, status: newStatus, updated: 'Just now', action: newAction, note, noteType };
             }
             return o;

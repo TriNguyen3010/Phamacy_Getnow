@@ -198,7 +198,6 @@ const ReadyToPackLayout = ({ orderData, onBack, onNext, initialIsPacked = false 
                                     </div>
                                     <div className="flex flex-col gap-1 items-end">
                                         <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }} icon={<PrinterOutlined />}>Print Label</Button>
-                                        <Button size="small" style={{ fontSize: '11px', height: '24px', padding: '0 8px' }}>Preview Label</Button>
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center pt-1 border-t border-gray-100 mt-1">
@@ -1158,23 +1157,19 @@ const AVAILABLE_PRODUCTS = [
     { label: 'Panadol Extra', value: 'Panadol Extra', unit: 'Box', price: 150000, image: gastropulgiteImg },
 ];
 
-const ProductList = ({ items }) => {
+const ProductList = ({ items, onUpdateItems }) => {
     const [prescNo, setPrescNo] = useState('BN000000002');
     const [diagnosis, setDiagnosis] = useState('Stomachache');
-    const [localItems, setLocalItems] = useState(() =>
-        items.map((item, idx) => ({ ...item, id: item.id || `gen-id-${idx}` }))
-    );
 
-    useEffect(() => {
-        setLocalItems(items.map((item, idx) => ({ ...item, id: item.id || `gen-id-${idx}` })));
-    }, [items]);
+    // Use passed items directly. Ensure IDs exist if not present in data (though parent should handle init ideally, doing it here relies on parent passing stable items)
+    // Actually, for this refactor, we assume parent passes items.
 
     const handleRemoveItem = (itemId) => {
-        setLocalItems(prev => prev.filter(item => item.id !== itemId));
+        onUpdateItems(prev => prev.filter(item => item.id !== itemId));
     };
 
     const handleAddItem = () => {
-        setLocalItems(prev => [{
+        onUpdateItems(prev => [{
             id: `new-${Date.now()}`,
             name: null, // Empty name triggers Select mode
             qty: 1,
@@ -1188,7 +1183,7 @@ const ProductList = ({ items }) => {
     const handleProductSelect = (itemId, productName) => {
         const product = AVAILABLE_PRODUCTS.find(p => p.value === productName);
         if (product) {
-            setLocalItems(prev => prev.map(item =>
+            onUpdateItems(prev => prev.map(item =>
                 item.id === itemId
                     ? { ...item, name: product.value, unit: product.unit, price: product.price, image: product.image, isNew: false }
                     : item
@@ -1197,8 +1192,48 @@ const ProductList = ({ items }) => {
     };
 
     const handleUpdateQty = (itemId, newQty) => {
-        setLocalItems(prev => prev.map(item => item.id === itemId ? { ...item, qty: newQty } : item));
+        onUpdateItems(prev => prev.map(item => item.id === itemId ? { ...item, qty: newQty } : item));
     }
+
+    const handleApplySwitch = (itemId) => {
+        console.log("Applying switch for ID:", itemId);
+        onUpdateItems(prev => prev.map(item => {
+            if (item.id === itemId) {
+                console.log("Match found for success highlight:", item.id);
+                return {
+                    ...item,
+                    name: "Blackmores Probiotics",
+                    price: item.price + 8000,
+                    warning: null, // Clear warning to revert to normal view
+                    image: probioticsImg,
+                    unit: 'Bottle',
+                    highlightStatus: 'success'
+                };
+            }
+            return item;
+        }));
+
+        setTimeout(() => {
+            onUpdateItems(prev => prev.map(item =>
+                item.id === itemId ? { ...item, highlightStatus: null } : item
+            ));
+        }, 2000);
+    };
+
+    const handleKeepOriginal = (itemId) => {
+        onUpdateItems(prev => prev.map(item => {
+            if (item.id === itemId) {
+                return { ...item, suggestionDismissed: true, highlightStatus: 'error' };
+            }
+            return item;
+        }));
+
+        setTimeout(() => {
+            onUpdateItems(prev => prev.map(item =>
+                item.id === itemId ? { ...item, highlightStatus: null } : item
+            ));
+        }, 2000);
+    };
 
 
     return (
@@ -1230,7 +1265,7 @@ const ProductList = ({ items }) => {
             {/* Items Header */}
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
-                    <span className="text-gray-500 text-sm">Items: <strong className="text-gray-900">{localItems.length}</strong></span>
+                    <span className="text-gray-500 text-sm">Items: <strong className="text-gray-900">{items.length}</strong></span>
                     <span className="bg-[#FEF3C7] text-[#92400E] text-xs font-medium px-2 py-0.5 rounded border border-[#FDE68A]">
                         Drafted by AI. Verify carefully.
                     </span>
@@ -1240,173 +1275,192 @@ const ProductList = ({ items }) => {
 
             {/* Items List */}
             <div className="flex flex-col gap-4">
-                {localItems.map((item) => (
-                    <div key={item.id} className="flex gap-4 p-4 bg-white border border-gray-200 rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-                        {/* Thumbnail */}
-                        <div className="w-16 h-16 bg-white rounded border border-gray-200 flex items-center justify-center flex-shrink-0 p-1">
-                            {item.image ? (
-                                <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                            ) : (
-                                <FileTextOutlined className="text-2xl text-gray-300" />
-                            )}
-                        </div>
+                {items.map((item) => {
+                    const isSuccess = item.highlightStatus === 'success';
+                    const isError = item.highlightStatus === 'error';
 
-                        {/* Form Area */}
-                        <div className="flex-1 space-y-3">
-                            {/* Warning Banner inside item */}
-                            {item.warning ? (
-                                <div>
-                                    {/* Name Row */}
-                                    <div className="flex items-center gap-2 w-full mb-2">
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white relative hover:border-blue-300 transition-colors flex-1">
-                                            <span className="text-gray-400 text-xs mr-2">Name</span>
-                                            <span className="text-gray-900 font-bold flex-1">{item.name}</span>
-                                            <DownOutlined className="text-gray-900 text-xs" />
+                    return (
+                        <div key={item.id} className={`flex gap-4 p-4 border rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.05)] ${isSuccess ? 'bg-green-50 border-green-500 ring-1 ring-green-500' :
+                            isError ? 'bg-red-50 border-red-500 ring-1 ring-red-500' :
+                                'bg-white border-gray-200'
+                            }`}>
+                            {/* Thumbnail */}
+                            <div className="w-16 h-16 bg-white rounded border border-gray-200 flex items-center justify-center flex-shrink-0 p-1">
+                                {item.image ? (
+                                    <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                ) : (
+                                    <FileTextOutlined className="text-2xl text-gray-300" />
+                                )}
+                            </div>
+
+                            {/* Form Area */}
+                            <div className="flex-1 space-y-3">
+                                {/* Warning Banner inside item */}
+                                {item.warning ? (
+                                    <div>
+                                        {/* Name Row */}
+                                        <div className="flex items-center gap-2 w-full mb-2">
+                                            <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white relative hover:border-blue-300 transition-colors flex-1">
+                                                <span className="text-gray-400 text-xs mr-2">Name</span>
+                                                <span className="text-gray-900 font-bold flex-1">{item.name}</span>
+                                                <DownOutlined className="text-gray-900 text-xs" />
+                                            </div>
+                                            <Popconfirm
+                                                title="Remove item"
+                                                description="Are you sure to remove this item?"
+                                                onConfirm={() => handleRemoveItem(item.id)}
+                                                okText="Yes"
+                                                cancelText="No"
+                                            >
+                                                <Button
+                                                    danger
+                                                    icon={<DeleteOutlined />}
+                                                    className="flex-shrink-0 border-red-200 text-red-500 hover:bg-red-50"
+                                                />
+                                            </Popconfirm>
                                         </div>
-                                        <Popconfirm
-                                            title="Remove item"
-                                            description="Are you sure to remove this item?"
-                                            onConfirm={() => handleRemoveItem(item.id)}
-                                            okText="Yes"
-                                            cancelText="No"
-                                        >
-                                            <Button
-                                                danger
-                                                icon={<DeleteOutlined />}
-                                                className="flex-shrink-0 border-red-200 text-red-500 hover:bg-red-50"
-                                            />
-                                        </Popconfirm>
-                                    </div>
 
 
-                                    {/* Warning Row */}
-                                    <div className="text-[#DAA507] text-xs font-medium flex items-center gap-1.5 mb-2 pl-1">
-                                        <WarningOutlined /> Out of stock
-                                    </div>
-
-                                    {/* Qty/Unit Row */}
-                                    <div className="grid grid-cols-2 gap-3 mb-2">
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 hover:border-blue-300 transition-colors">
-                                            <span className="text-gray-400 text-xs mr-2">Qty</span>
-                                            <span className="text-gray-900 font-medium flex-1">{item.qty}</span>
-                                            <DownOutlined className="text-gray-400 text-xs" />
+                                        {/* Warning Row */}
+                                        <div className="text-[#DAA507] text-xs font-medium flex items-center gap-1.5 mb-2 pl-1">
+                                            <WarningOutlined /> Out of stock
                                         </div>
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 hover:border-blue-300 transition-colors">
-                                            <span className="text-gray-400 text-xs mr-2">Unit</span>
-                                            <span className="text-gray-900 font-medium flex-1">{item.unit}</span>
-                                            <DownOutlined className="text-gray-400 text-xs" />
-                                        </div>
-                                    </div>
 
-                                    {/* Price Row */}
-                                    <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 mb-4 opacity-75">
-                                        <span className="text-gray-400 text-xs mr-2">Price</span>
-                                        <span className="text-gray-600 font-medium">{item.price.toLocaleString()}</span>
-                                    </div>
-
-                                    {/* Suggestion Box */}
-                                    <div className="bg-[#eff6ff] rounded-lg p-4 relative">
-                                        <div className="flex gap-3">
-                                            <BulbOutlined className="text-gray-900 mt-1 text-lg" />
-                                            <div className="flex-1">
-                                                <div className="text-sm text-gray-900 mb-2">
-                                                    Change to: <span className="font-bold">Blackmores Probiotics?</span>
-                                                </div>
-                                                <div className="text-sm text-gray-900 mb-2 font-bold">
-                                                    Price gap: +8,000
-                                                </div>
-                                                <div className="text-xs text-slate-500 italic mb-4">
-                                                    Tips: Always consult with customer.
-                                                </div>
-                                                <div className="flex gap-3">
-                                                    <Button size="middle" danger className="bg-white flex items-center gap-2">
-                                                        <DislikeOutlined /> Keep original
-                                                    </Button>
-                                                    <Button size="middle" className="bg-white text-green-700 border-green-200 hover:text-green-800 hover:border-green-400 flex items-center gap-2">
-                                                        <LikeOutlined /> Apply switch
-                                                    </Button>
-                                                </div>
+                                        {/* Qty/Unit Row */}
+                                        <div className="grid grid-cols-2 gap-3 mb-2">
+                                            <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 hover:border-blue-300 transition-colors">
+                                                <span className="text-gray-400 text-xs mr-2">Qty</span>
+                                                <span className="text-gray-900 font-medium flex-1">{item.qty}</span>
+                                                <DownOutlined className="text-gray-400 text-xs" />
+                                            </div>
+                                            <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 hover:border-blue-300 transition-colors">
+                                                <span className="text-gray-400 text-xs mr-2">Unit</span>
+                                                <span className="text-gray-900 font-medium flex-1">{item.unit}</span>
+                                                <DownOutlined className="text-gray-400 text-xs" />
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    {/* Row 1: Name */}
-                                    <div className="flex items-center gap-2 w-full">
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors flex-1 relative">
-                                            <span className="text-gray-400 text-xs mr-2">Name</span>
-                                            {!item.name ? (
-                                                <Select
-                                                    showSearch
-                                                    placeholder="Select medicine"
-                                                    style={{ width: '100%' }}
-                                                    bordered={false}
-                                                    onChange={(val) => handleProductSelect(item.id, val)}
-                                                    options={AVAILABLE_PRODUCTS}
-                                                    filterOption={(input, option) =>
-                                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                                    }
-                                                />
-                                            ) : (
-                                                <span className="text-gray-900 font-medium flex-1">{item.name}</span>
-                                            )}
-                                            {item.name && <DownOutlined className="text-gray-400 text-xs" />}
-                                        </div>
-                                        <Popconfirm
-                                            title="Remove item"
-                                            description="Are you sure to remove this item?"
-                                            onConfirm={() => handleRemoveItem(item.id)}
-                                            okText="Yes"
-                                            cancelText="No"
-                                        >
-                                            <Button
-                                                danger
-                                                icon={<DeleteOutlined />}
-                                                className="flex-shrink-0 border-red-200 text-red-500 hover:bg-red-50"
-                                            />
-                                        </Popconfirm>
-                                    </div>
 
-                                    {/* Row 2: Qt / Unit / Price */}
-                                    <div className="grid grid-cols-[1fr_1fr_1.5fr] gap-3">
-                                        <div className="border border-gray-200 rounded px-2 py-1 flex items-center bg-white hover:border-blue-300 transition-colors focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
-                                            <span className="text-gray-400 text-xs mr-2 select-none">Qty</span>
-                                            <Button
-                                                type="text"
-                                                size="small"
-                                                icon={<MinusOutlined style={{ fontSize: '10px' }} />}
-                                                onClick={() => handleUpdateQty(item.id, Math.max(1, Number(item.qty) - 1))}
-                                                className="flex items-center justify-center text-gray-400 hover:text-gray-600 min-w-[24px] h-[24px]"
-                                            />
-                                            <input
-                                                type="number"
-                                                value={item.qty}
-                                                onChange={(e) => handleUpdateQty(item.id, Math.max(1, parseInt(e.target.value) || 1))}
-                                                className="w-[30px] text-center border-none focus:outline-none font-medium text-gray-900 text-sm bg-transparent appearance-none m-0"
-                                            />
-                                            <Button
-                                                type="text"
-                                                size="small"
-                                                icon={<PlusOutlined style={{ fontSize: '10px' }} />}
-                                                onClick={() => handleUpdateQty(item.id, Number(item.qty) + 1)}
-                                                className="flex items-center justify-center text-gray-400 hover:text-gray-600 min-w-[24px] h-[24px]"
-                                            />
-                                        </div>
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
-                                            <span className="text-gray-400 text-xs mr-2">Unit</span>
-                                            <span className="text-gray-900 font-medium flex-1">{item.unit}</span>
-                                        </div>
-                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
+                                        {/* Price Row */}
+                                        <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-gray-50 mb-4 opacity-75">
                                             <span className="text-gray-400 text-xs mr-2">Price</span>
-                                            <span className="text-gray-900 font-medium flex-1">{item.price.toLocaleString()}đ</span>
+                                            <span className="text-gray-600 font-medium">{item.price.toLocaleString()}</span>
                                         </div>
+
+                                        {/* Suggestion Box */}
+                                        {!item.suggestionDismissed && (
+                                            <div className="bg-[#eff6ff] rounded-lg p-4 relative">
+                                                <div className="flex gap-3">
+                                                    <BulbOutlined className="text-gray-900 mt-1 text-lg" />
+                                                    <div className="flex-1">
+                                                        <div className="text-sm text-gray-900 mb-2">
+                                                            Change to: <span className="font-bold">Blackmores Probiotics?</span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-900 mb-2 font-bold">
+                                                            Price gap: +8,000
+                                                        </div>
+                                                        <div className="text-xs text-slate-500 italic mb-4">
+                                                            Tips: Always consult with customer.
+                                                        </div>
+                                                        <div className="flex gap-3">
+                                                            <Button
+                                                                size="middle"
+                                                                danger
+                                                                className="bg-white flex items-center gap-2"
+                                                                onClick={() => handleKeepOriginal(item.id)}
+                                                            >
+                                                                <DislikeOutlined /> Keep original
+                                                            </Button>
+                                                            <Button
+                                                                size="middle"
+                                                                className="bg-white text-green-700 border-green-200 hover:text-green-800 hover:border-green-400 flex items-center gap-2"
+                                                                onClick={() => handleApplySwitch(item.id)}
+                                                            >
+                                                                <LikeOutlined /> Apply switch
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </>
-                            )}
+                                ) : (
+                                    <>
+                                        {/* Row 1: Name */}
+                                        <div className="flex items-center gap-2 w-full">
+                                            <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors flex-1 relative">
+                                                <span className="text-gray-400 text-xs mr-2">Name</span>
+                                                {!item.name ? (
+                                                    <Select
+                                                        showSearch
+                                                        placeholder="Select medicine"
+                                                        style={{ width: '100%' }}
+                                                        bordered={false}
+                                                        onChange={(val) => handleProductSelect(item.id, val)}
+                                                        options={AVAILABLE_PRODUCTS}
+                                                        filterOption={(input, option) =>
+                                                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-900 font-medium flex-1">{item.name}</span>
+                                                )}
+                                                {item.name && <DownOutlined className="text-gray-400 text-xs" />}
+                                            </div>
+                                            <Popconfirm
+                                                title="Remove item"
+                                                description="Are you sure to remove this item?"
+                                                onConfirm={() => handleRemoveItem(item.id)}
+                                                okText="Yes"
+                                                cancelText="No"
+                                            >
+                                                <Button
+                                                    danger
+                                                    icon={<DeleteOutlined />}
+                                                    className="flex-shrink-0 border-red-200 text-red-500 hover:bg-red-50"
+                                                />
+                                            </Popconfirm>
+                                        </div>
+
+                                        {/* Row 2: Qt / Unit / Price */}
+                                        <div className="grid grid-cols-[1fr_1fr_1.5fr] gap-3">
+                                            <div className="border border-gray-200 rounded px-2 py-1 flex items-center bg-white hover:border-blue-300 transition-colors focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+                                                <span className="text-gray-400 text-xs mr-2 select-none">Qty</span>
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    icon={<MinusOutlined style={{ fontSize: '10px' }} />}
+                                                    onClick={() => handleUpdateQty(item.id, Math.max(1, Number(item.qty) - 1))}
+                                                    className="flex items-center justify-center text-gray-400 hover:text-gray-600 min-w-[24px] h-[24px]"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    value={item.qty}
+                                                    onChange={(e) => handleUpdateQty(item.id, Math.max(1, parseInt(e.target.value) || 1))}
+                                                    className="w-[30px] text-center border-none focus:outline-none font-medium text-gray-900 text-sm bg-transparent appearance-none m-0"
+                                                />
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    icon={<PlusOutlined style={{ fontSize: '10px' }} />}
+                                                    onClick={() => handleUpdateQty(item.id, Number(item.qty) + 1)}
+                                                    className="flex items-center justify-center text-gray-400 hover:text-gray-600 min-w-[24px] h-[24px]"
+                                                />
+                                            </div>
+                                            <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
+                                                <span className="text-gray-400 text-xs mr-2">Unit</span>
+                                                <span className="text-gray-900 font-medium flex-1">{item.unit}</span>
+                                            </div>
+                                            <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors">
+                                                <span className="text-gray-400 text-xs mr-2">Price</span>
+                                                <span className="text-gray-900 font-medium flex-1">{item.price.toLocaleString()}đ</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -1510,7 +1564,7 @@ const OrderReturnedLayout = ({ orderData, onBack }) => {
                 createdDate={orderData.created}
             />
 
-            <div className="flex-1 flex flex-col overflow-hidden relative">
+            <div className="flex-1 flex flex-col overflow-y-auto relative">
                 {/* Returned Banner - Fixed */}
                 <div className="z-20 shrink-0 px-8 pt-0 bg-white">
                     <div className="max-w-4xl mx-auto">
@@ -1760,7 +1814,7 @@ const OrderCancelledLayout = ({ orderData, onBack }) => {
                 stepItems={cancelledSteps}
             />
 
-            <div className="flex-1 flex flex-col overflow-hidden relative">
+            <div className="flex-1 flex flex-col overflow-y-auto relative">
                 {/* Cancelled Banner - Fixed */}
                 <div className="z-20 shrink-0 px-8 pt-0 bg-white">
                     <div className="max-w-4xl mx-auto">
@@ -1872,8 +1926,27 @@ const ViewCodeItemOutlinedIcon = () => (
 ); // Using a placeholder icon or similar to what is in screenshot: "No symbol"
 
 export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) {
+    // Determine which order data to use (prop or default mock)
+    // Also ensuring items are valid if using props
+    const effectiveOrder = order ? {
+        ...defaultOrderData,
+        ...order,
+        id: order.id,
+        items: order.items || defaultOrderData.items,
+        created: `Created on ${order.date}`
+    } : defaultOrderData;
+
+    // Helper to ensure all items have unique IDs
+    const ensureIds = (items) => items.map((item, idx) => ({ ...item, id: item.id || `gen-id-${idx}` }));
+
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [localStatus, setLocalStatus] = useState(null);
+    const [currentItems, setCurrentItems] = useState(() => ensureIds(effectiveOrder.items));
+
+    // Sync currentItems when effectiveOrder changes (optional, but good for resets)
+    useEffect(() => {
+        setCurrentItems(ensureIds(effectiveOrder.items));
+    }, [order]);
 
     // Reset localStatus when order prop changes
     useEffect(() => {
@@ -1901,17 +1974,6 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
         };
     }, [onBack]);
 
-
-    // Determine which order data to use (prop or default mock)
-    // Also ensuring items are valid if using props
-    const effectiveOrder = order ? {
-        ...defaultOrderData,
-        ...order,
-        id: order.id,
-        items: order.items || defaultOrderData.items,
-        created: `Created on ${order.date}`
-    } : defaultOrderData;
-
     const currentStatus = localStatus || effectiveOrder.status;
 
     const isPaymentStatus = ['Waiting for Payment', 'Pending payment', 'Awaiting payment'].includes(currentStatus);
@@ -1924,8 +1986,30 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
     const isCancelledStatus = currentStatus === 'Cancelled';
 
     const handleConfirmOrder = () => {
+        // Validation: Block if any item has "Out of stock" warning
+        const itemsWithIssues = currentItems.filter(i => i.warning === 'Out of stock');
+
+        if (itemsWithIssues.length > 0) {
+            // Flash red on issue items
+            setCurrentItems(prev => prev.map(item =>
+                item.warning === 'Out of stock'
+                    ? { ...item, highlightStatus: 'error' }
+                    : item
+            ));
+
+            setTimeout(() => {
+                setCurrentItems(prev => prev.map(item =>
+                    item.warning === 'Out of stock'
+                        ? { ...item, highlightStatus: null }
+                        : item
+                ));
+            }, 2000);
+
+            return; // Block status change
+        }
+
         if (onConfirm) {
-            onConfirm({ ...effectiveOrder, status: 'Waiting for Payment' });
+            onConfirm({ ...effectiveOrder, items: currentItems, status: 'Waiting for Payment' });
         }
     };
 
@@ -2037,7 +2121,7 @@ export default function OrderDetailAntd({ onBack, onConfirm, onUpdate, order }) 
 
 
                             <CustomerInfo customer={effectiveOrder.customer} />
-                            <ProductList items={effectiveOrder.items} />
+                            <ProductList items={currentItems} onUpdateItems={setCurrentItems} />
                             <SummaryDetails />
                         </div>
 

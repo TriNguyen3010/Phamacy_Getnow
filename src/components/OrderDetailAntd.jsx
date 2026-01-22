@@ -1149,7 +1149,7 @@ const CustomerInfo = ({ customer }) => {
 
 // Mock Products for Selection
 const AVAILABLE_PRODUCTS = [
-    { label: 'Lisinopril 10mg', value: 'Lisinopril 10mg', unit: 'Strip', price: 128000, image: lisinoprilImg },
+    { label: 'Lisinopril 10mg', value: 'Lisinopril 10mg', unit: 'Strip', price: 128000, image: lisinoprilImg, outOfStock: true }, // Marked as out of stock
     { label: 'Gastropulgite', value: 'Gastropulgite', unit: 'Box', price: 250000, image: gastropulgiteImg },
     { label: 'Vitamin C 500mg', value: 'Vitamin C 500mg', unit: 'Bottle', price: 150000, image: probioticsImg },
     { label: 'Pain Relief Patch', value: 'Pain Relief Patch', unit: 'Pack', price: 100000, image: sucralfateImg },
@@ -1185,7 +1185,15 @@ const ProductList = ({ items, onUpdateItems }) => {
         if (product) {
             onUpdateItems(prev => prev.map(item =>
                 item.id === itemId
-                    ? { ...item, name: product.value, unit: product.unit, price: product.price, image: product.image, isNew: false }
+                    ? {
+                        ...item,
+                        name: product.value,
+                        unit: product.unit,
+                        price: product.price,
+                        image: product.image,
+                        isNew: false,
+                        warning: product.outOfStock ? 'Out of stock' : null
+                    }
                     : item
             ));
         }
@@ -1302,8 +1310,21 @@ const ProductList = ({ items, onUpdateItems }) => {
                                         <div className="flex items-center gap-2 w-full mb-2">
                                             <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white relative hover:border-blue-300 transition-colors flex-1">
                                                 <span className="text-gray-400 text-xs mr-2">Name</span>
-                                                <span className="text-gray-900 font-bold flex-1">{item.name}</span>
-                                                <DownOutlined className="text-gray-900 text-xs" />
+                                                <Select
+                                                    showSearch
+                                                    value={item.name}
+                                                    placeholder="Select medicine"
+                                                    style={{ width: '100%' }}
+                                                    variant="borderless"
+                                                    onChange={(val) => handleProductSelect(item.id, val)}
+                                                    options={AVAILABLE_PRODUCTS}
+                                                    className="custom-select-no-padding font-bold text-gray-900 flex-1"
+                                                    popupMatchSelectWidth={false}
+                                                    suffixIcon={<DownOutlined className="text-gray-900 text-xs" />}
+                                                    filterOption={(input, option) =>
+                                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                    }
+                                                />
                                             </div>
                                             <Popconfirm
                                                 title="Remove item"
@@ -1389,22 +1410,21 @@ const ProductList = ({ items, onUpdateItems }) => {
                                         <div className="flex items-center gap-2 w-full">
                                             <div className="border border-gray-200 rounded px-3 py-1.5 flex items-center bg-white hover:border-blue-300 transition-colors flex-1 relative">
                                                 <span className="text-gray-400 text-xs mr-2">Name</span>
-                                                {!item.name ? (
-                                                    <Select
-                                                        showSearch
-                                                        placeholder="Select medicine"
-                                                        style={{ width: '100%' }}
-                                                        bordered={false}
-                                                        onChange={(val) => handleProductSelect(item.id, val)}
-                                                        options={AVAILABLE_PRODUCTS}
-                                                        filterOption={(input, option) =>
-                                                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <span className="text-gray-900 font-medium flex-1">{item.name}</span>
-                                                )}
-                                                {item.name && <DownOutlined className="text-gray-400 text-xs" />}
+                                                <Select
+                                                    showSearch
+                                                    value={item.name}
+                                                    placeholder="Select medicine"
+                                                    style={{ width: '100%' }}
+                                                    variant="borderless"
+                                                    onChange={(val) => handleProductSelect(item.id, val)}
+                                                    options={AVAILABLE_PRODUCTS}
+                                                    className="custom-select-no-padding font-medium text-gray-900 flex-1"
+                                                    popupMatchSelectWidth={false}
+                                                    suffixIcon={<DownOutlined className="text-gray-400 text-xs" />}
+                                                    filterOption={(input, option) =>
+                                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                    }
+                                                />
                                             </div>
                                             <Popconfirm
                                                 title="Remove item"
